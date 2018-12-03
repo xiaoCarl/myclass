@@ -1,0 +1,6 @@
+12/03/2018 01:04:17 AM - DEBUG - This is a debug log.
+12/03/2018 01:04:17 AM - INFO - This is a info log.
+12/03/2018 01:04:17 AM - WARNING - This is a warning log.
+12/03/2018 01:04:17 AM - ERROR - This is a error log.
+12/03/2018 01:04:17 AM - CRITICAL - This is a critical log.
+12/03/2018 01:04:17 AM - WARNING - Tom is 10 years old.
