@@ -7,12 +7,9 @@ python模块：包含并且有组织的代码片段为模块。
 表现形式为：写的代码保存为文件。这个文件就是一个模块。sample.py 其中文件名smaple为模块名字。
 
 关系图：
-<<<<<<< HEAD
-![Alt text](https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/pic/iem/1ad5ad6eddc451dad2c24565bffd5266d0163203.jpg)
-=======
 
+![关系图](./image/python_4_1.jpg)
 
->>>>>>> d5556c219c9537cd64aeb86a5f22f512cebf8b35
 
 ## 2.python包是：
 包是一个有层次的文件目录结构，它定义了由n个模块或n个子包组成的python应用程序执行环境。通俗一点：包是一个包含__init__.py 文件的目录，该目录下一定得有这个__init__.py文件和其它模块或子包。
@@ -61,6 +58,8 @@ import package_a.module_a1
 
 关系图：
 
+
+![关系图](./image/python_4_2.jpg)
 
 
 ## 3.库（library）
