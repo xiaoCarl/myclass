@@ -8,11 +8,7 @@ python模块：包含并且有组织的代码片段为模块。
 
 关系图：
 
-<<<<<<< HEAD
 ![关系图](./image/python_4_1.jpg)
-=======
-![Alt text](./image/python4_1.jpg)
->>>>>>> cfad07a0f347b5f4b20b6fc3da23c030c2c86037
 
 
 ## 2.python包是：
@@ -63,11 +59,7 @@ import package_a.module_a1
 关系图：
 
 
-<<<<<<< HEAD
 ![关系图](./image/python_4_2.jpg)
-=======
-![Alt text](./image/python4_2.jpg)
->>>>>>> cfad07a0f347b5f4b20b6fc3da23c030c2c86037
 
 
 ## 3.库（library）
