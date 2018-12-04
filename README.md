@@ -13,7 +13,7 @@
 
 -----------------------------------------------------------------------------------------------
 ## py_prolog.py
-  use PySWIP(https://github.com/yuce/pyswip) .
+  Use PySWIP(https://github.com/yuce/pyswip) .
  
    PySWIP is a Python - SWI-Prolog bridge enabling to query SWI-Prolog in your Python programs.
 ### run
@@ -26,7 +26,7 @@
 -----------------------------------------------------------------------------------------------
 ## py_shell.py
   How to use shell command line in python program 
-
+  Use "subprocess" module.
 
 -------------------------------------------------------------------------------------------------
 ## py_sql.py
