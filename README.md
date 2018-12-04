@@ -8,6 +8,7 @@
  The file "my.conf" is a demo config file.  
 
 ### run conf_log.py  
+
  $python conf_log.py
 
 -----------------------------------------------------------------------------------------------
@@ -16,7 +17,9 @@
  
    PySWIP is a Python - SWI-Prolog bridge enabling to query SWI-Prolog in your Python programs.
 ### run
+
   $pip install pyswip
+
   $python py_prolog.py   
 
 
