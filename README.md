@@ -1,5 +1,6 @@
 # python
 
+-----------------------------------------------------------------------------------------------
 ## conf_log.py 
  Use config file to config log info in program.
 
@@ -10,15 +11,24 @@
  $python conf_log.py
 
 -----------------------------------------------------------------------------------------------
-## py_pl.py
+## py_prolog.py
   use PySWIP(https://github.com/yuce/pyswip) .
  
    PySWIP is a Python - SWI-Prolog bridge enabling to query SWI-Prolog in your Python programs.
 ### run
   $pip install pyswip
-  $python py_pl.py   
+  $python py_prolog.py   
 
 
+-----------------------------------------------------------------------------------------------
+## py_shell.py
+  How to use shell command line in python program 
+
+
+-------------------------------------------------------------------------------------------------
+## py_sql.py
+  Use SQL in python program
+   
 -------------------------------------------------------------------------------------------------
 # prolog
 
