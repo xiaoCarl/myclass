@@ -13,4 +13,4 @@ Python引入了一个变量__name__，当文件是被调用时，__name__的值�
 执行时才会运行，代码和测试完美的结合在一起。
 
 典型的Python文件结构：
-![](./image/python04_1.jpg)
+![文件结构](./image/python_02_1.gif)

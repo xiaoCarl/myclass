@@ -110,14 +110,19 @@ if foo[:3] == 'bar':
 #Yes
 if isinstance(obj, int):
 
-# Yes
+#Yes
+
 if isinstance(obj, basestring):
+
 # 字符串类型
 
 #No
+
 if type(obj) is type(1):
 对序列(字符串、列表 、元组), 空序列为false:
+
 #Yes
+
 if not seq:
    pass
 if seq:
@@ -139,5 +144,5 @@ if greeting::
 #No
 if greeting == True
    pass
-if greeting is True: # Worse
+if greeting is True: #Worse
    pass
