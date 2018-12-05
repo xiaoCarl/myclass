@@ -78,8 +78,14 @@ awk -F: 'NR==5{print}'  /etc/passwd                         //显示第5行
 awk -F: 'NR==5 || NR==6{print}'  /etc/passwd       //显示第5行和第6行
 route -n|awk 'NR!=1{print}'                                       //不显示第一行
  
-** //匹配代码块
-//纯字符匹配   !//纯字符不匹配   ~//字段值匹配    !~//字段值不匹配   ~/a1|a2/字段值匹配a1或a2   
+** 匹配代码块
+
+"//"        :纯字符匹配   
+"!//"       : 纯字符不匹配   
+"~//"       :字段值匹配    
+"!~//"      :字段值不匹配   
+"~/a1|a2/"  :字段值匹配a1或a2   
+
 awk '/mysql/' /etc/passwd
 awk '/mysql/{print }' /etc/passwd
 awk '/mysql/{print $0}' /etc/passwd                   //三条指令结果一样
@@ -93,7 +99,9 @@ awk -F: '{if($1~/mail/) print $1}' /etc/passwd     //与上面相同
 awk -F: '$1!~/mail/{print $1}' /etc/passwd          //不匹配
 awk -F: '$1!~/mail|mysql/{print $1}' /etc/passwd        
  
+
 ** IF语句
+
 必须用在{}中，且比较内容用()扩起来
 awk -F: '{if($1~/mail/) print $1}' /etc/passwd                                       //简写
 awk -F: '{if($1~/mail/) {print $1}}'  /etc/passwd                                   //全写
@@ -101,6 +109,7 @@ awk -F: '{if($1~/mail/) {print $1} else {print $2}}' /etc/passwd            //if
  
  
 ** 条件表达式
+
 ==   !=   >   >=  
 awk -F":" '$1=="mysql"{print $3}' /etc/passwd  
 awk -F":" '{if($1=="mysql") print $3}' /etc/passwd          //与上面相同 
@@ -111,6 +120,7 @@ awk -F":" '$3<1{print $3}' /etc/passwd                            //小于
 awk -F":" '$3<=1{print $3}' /etc/passwd                         //小于等于
  
 ** 逻辑运算符
+
 &&　|| 
 awk -F: '$1~/mail/ && $3>8 {print }' /etc/passwd         //逻辑与，$1匹配mail，并且$3>8
 awk -F: '{if($1~/mail/ && $3>8) print }' /etc/passwd
@@ -118,6 +128,7 @@ awk -F: '$1~/mail/ || $3>1000 {print }' /etc/passwd       //逻辑或
 awk -F: '{if($1~/mail/ || $3>1000) print }' /etc/passwd 
  
 ** 数值运算
+
 awk -F: '$3 > 100' /etc/passwd    
 awk -F: '$3 > 100 || $3 < 5' /etc/passwd  
 awk -F: '$3+$4 > 200' /etc/passwd
@@ -128,15 +139,20 @@ awk '/MemFree/{print $2/1024}' /proc/meminfo                  //除法
 awk '/MemFree/{print int($2/1024)}' /proc/meminfo           //取整
  
 ** 输出分隔符OFS
+
 awk '$6 ~ /FIN/ || NR==1 {print NR,$4,$5,$6}' OFS="\t" netstat.txt
 awk '$6 ~ /WAIT/ || NR==1 {print NR,$4,$5,$6}' OFS="\t" netstat.txt        
 //输出字段6匹配WAIT的行，其中输出每行行号，字段4，5,6，并使用制表符分割字段
+
  
 ** 输出处理结果到文件
+
 1.在命令代码块中直接输出    route -n|awk 'NR!=1{print > "./fs"}'   
 2.使用重定向进行输出           route -n|awk 'NR!=1{print}'  > ./fs
+
  
 ** 格式化输出
+
 netstat -anp|awk '{printf "%-8s %-8s %-10s\n",$1,$2,$3}' 
 printf表示格式输出
 %格式化输出分隔符
@@ -146,8 +162,10 @@ s表示字符串类型
 第三个字段输出字符串类型(长度为10)
 netstat -anp|awk '$6=="LISTEN" || NR==1 {printf "%-10s %-10s %-10s \n",$1,$2,$3}'
 netstat -anp|awk '$6=="LISTEN" || NR==1 {printf "%-3s %-10s %-10s %-10s \n",NR,$1,$2,$3}'
+
  
 ** IF语句
+
 awk -F: '{if($3>100) print "large"; else print "small"}' /etc/passwd
 small
 small
@@ -163,8 +181,10 @@ awk -F: 'BEGIN{i=1} {if(i<NF) {print NR,NF} i++ }' /etc/passwd
 另一种形式
 awk -F: '{print ($3>100 ? "yes":"no")}'  /etc/passwd 
 awk -F: '{print ($3>100 ? $3":\tyes":$3":\tno")}'  /etc/passwd
+
  
 ** while语句
+
 awk -F: 'BEGIN{i=1} {while(i<NF) print NF,$i,i++}' /etc/passwd 
 7 root 1
 7 x 2
@@ -172,8 +192,10 @@ awk -F: 'BEGIN{i=1} {while(i<NF) print NF,$i,i++}' /etc/passwd
 7 0 4
 7 root 5
 7 /root 6
+
  
 ** 数组
+
 netstat -anp|awk 'NR!=1{a[$6]++} END{for (i in a) print i,"\t",a[i]}'
 netstat -anp|awk 'NR!=1{a[$6]++} END{for (i in a) printf "%-20s %-10s %-5s \n", i,"\t",a[i]}'
 9523                               1     
@@ -184,39 +206,53 @@ LISTEN                            6
 7913                               1     
 10837                             1     
 9833                               1     
+
  
 *** 应用1
+
 awk -F: '{print NF}' helloworld.sh                                                       //输出文件每行有多少字段
 awk -F: '{print $1,$2,$3,$4,$5}' helloworld.sh                                 //输出前5个字段
 awk -F: '{print $1,$2,$3,$4,$5}' OFS='\t' helloworld.sh                 //输出前5个字段并使用制表符分隔输出
 awk -F: '{print NR,$1,$2,$3,$4,$5}' OFS='\t' helloworld.sh           //制表符分隔输出前5个字段，并打印行号
+
  
 *** 应用2
+
 awk -F'[:#]' '{print NF}'  helloworld.sh                                                  //指定多个分隔符: #，输出每行多少字段
 awk -F'[:#]' '{print $1,$2,$3,$4,$5,$6,$7}' OFS='\t' helloworld.sh   //制表符分隔输出多字段
+
  
 *** 应用3
+
 awk -F'[:#/]' '{print NF}' helloworld.sh                                               //指定三个分隔符，并输出每行字段数
 awk -F'[:#/]' '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' helloworld.sh     //制表符分隔输出多字段
+
  
 *** 应用4
+
 计算/home目录下，普通文件的大小，使用KB作为单位
 ls -l|awk 'BEGIN{sum=0} !/^d/{sum+=$5} END{print "total size is:",sum/1024,"KB"}'
 ls -l|awk 'BEGIN{sum=0} !/^d/{sum+=$5} END{print "total size is:",int(sum/1024),"KB"}'         //int是取整的意思
+
  
 *** 应用5
+
 统计netstat -anp 状态为LISTEN和CONNECT的连接数量分别是多少
 netstat -anp|awk '$6~/LISTEN|CONNECTED/{sum[$6]++} END{for (i in sum) printf "%-10s %-6s %-3s \n", i," ",sum[i]}'
+
  
 *** 应用6
+
 统计/home目录下不同用户的普通文件的总数是多少？
 ls -l|awk 'NR!=1 && !/^d/{sum[$3]++} END{for (i in sum) printf "%-6s %-5s %-3s \n",i," ",sum[i]}'   
 mysql        199 
 root           374 
 统计/home目录下不同用户的普通文件的大小总size是多少？
 ls -l|awk 'NR!=1 && !/^d/{sum[$3]+=$5} END{for (i in sum) printf "%-6s %-5s %-3s %-2s \n",i," ",sum[i]/1024/1024,"MB"}'
+
  
 *** 应用7
+
 输出成绩表
 awk 'BEGIN{math=0;eng=0;com=0;printf "Lineno.   Name    No.    Math   English   Computer    Total\n";printf "------------------------------------------------------------\n"}{math+=$3; eng+=$4; com+=$5;printf "%-8s %-7s %-7s %-7s %-9s %-10s %-7s \n",NR,$1,$2,$3,$4,$5,$3+$4+$5} END{printf "------------------------------------------------------------\n";printf "%-24s %-7s %-9s %-20s \n","Total:",math,eng,com;printf "%-24s %-7s %-9s %-20s \n","Avg:",math/NR,eng/NR,com/NR}' test0
 
