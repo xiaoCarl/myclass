@@ -50,8 +50,8 @@ I get 10 times more traffic from [Google][] than from
 # 图片
 
 ```
-![python代码结构](./python/img/python_02_1.gif)
+![python代码结构](./python/image/python_02_1.gif)
 
 ```
 
-![python代码结构](./python/img/python_02_1.gif)
+![python代码结构](./python/image/python_02_1.gif)
