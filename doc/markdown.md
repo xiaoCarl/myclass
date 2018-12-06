@@ -60,11 +60,11 @@ I get 10 times more traffic from [Google][] than from
 
 # 5、列表
 
-'''
+```
  *   Red
  *   Green
  *   Blue
-'''
+```
 
 *   Red
 *   Green
@@ -72,11 +72,11 @@ I get 10 times more traffic from [Google][] than from
 
 或者：
 
-'''
+```
 1.   Red
 2.   Green
 3.   Blue
-'''
+```
 
 1.   Red
 2.   Green
