@@ -6,15 +6,14 @@
 ## 2. 基本用法
 prog.py是我在linux下测试argparse的文件，放在/tmp目录下，其内容如下：
 
-`
+```python
 #!/usr/bin/env python
 # encoding: utf-8
-
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.parse_args()
-`
+```
 
 测试：
 
@@ -43,7 +42,7 @@ prog.py: error: unrecognized arguments: foo
 positional arguments为英文定义，中文名叫有翻译为定位参数的，用法是不用带-就可用
 修改prog.py的内容如下：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -55,7 +54,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("echo")
 args = parser.parse_args()
 print args.echo
-`
+```
 执行测试如下
 
 yarving@yarving-VirtualBox /tmp $ python prog.py   
@@ -87,7 +86,7 @@ hahahaha
 一种是通过--来指定的长参数，如--help
 这两种方式可以同存，也可以只存在一个，修改prog.py内容如下：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -100,7 +99,7 @@ parser.add_argument("-v", "--verbosity", help="increase output verbosity")
 args = parser.parse_args()
 if args.verbosity:
         print "verbosity turned on"
-`
+```
 
 注意这一行：parser.add_argument("-v", "--verbosity", help="increase output verbosity")
 定义了可选参数-v或--verbosity，通过解析后，其值保存在args.verbosity变量中
@@ -131,7 +130,7 @@ prog.py: error: argument -v/--verbosity: expected one argument
 ## 5. action='store_true'
 上一个用法中-v必须指定参数值，否则就会报错，有没有像-h那样，不需要指定参数值的呢，答案是有，通过定义参数时指定action="store_true"即可，用法如下
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -145,7 +144,7 @@ parser.add_argument("-v", "--verbose", help="increase output verbosity",
 args = parser.parse_args()
 if args.verbose:
         print "verbosity turned on"
-`
+```
 
 测试：
 
@@ -164,7 +163,7 @@ optional arguments:
 默认的参数类型为str，如果要进行数学计算，需要对参数进行解析后进行类型转换，如果不能转换则需要报错，这样比较麻烦
 argparse提供了对参数类型的解析，如果类型不符合，则直接报错。如下是对参数进行平方计算的程序：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -177,7 +176,7 @@ parser.add_argument('x', type=int, help="the base")
 args = parser.parse_args()
 answer = args.x ** 2
 print answer
-`
+```
 
 测试
 
@@ -205,7 +204,7 @@ optional arguments:
 5中的action的例子中定义了默认值为True和False的方式，如果要限定某个值的取值范围，比如6中的整形，限定其取值范围为0， 1， 2，该如何进行呢？
 修改prog.py文件如下：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -226,7 +225,7 @@ elif args.verbosity == 1:
     print "{}^2 == {}".format(args.square, answer)
 else:
     print answer
-`
+```
 
 测试如下：
 
@@ -269,7 +268,7 @@ positional arguments:
 通过argparse.ArgumentParser(description="calculate X to the power of Y")即可
 修改prog.py内容如下：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -292,7 +291,7 @@ elif args.verbose:
     print "{} to the power {} equals {}".format(args.x, args.y, answer)
 else:
     print "{}^{} == {}".format(args.x, args.y, answer)
-`
+```
 
 打印帮助信息时即显示calculate X to the power of Y
 
