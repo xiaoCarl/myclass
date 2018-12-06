@@ -122,7 +122,8 @@ logging模块的四大组件
 
 ### 1.最简单的日志输出
 先来试着分别输出一条不同日志级别的日志记
-`
+
+```
 import logging
  
 logging.debug("This is a debug log.")
@@ -131,22 +132,22 @@ logging.warning("This is a warning log.")
 logging.error("This is a error log.")
 logging.critical("This is a critical log.")
 
-`
+```
 也可以这样写：
-`
+```
 logging.log(logging.DEBUG, "This is a debug log.")
 logging.log(logging.INFO, "This is a info log.")
 logging.log(logging.WARNING, "This is a warning log.")
 logging.log(logging.ERROR, "This is a error log.")
 logging.log(logging.CRITICAL, "This is a critical log.")
-`
+```
 输出结果
-`
+```
 WARNING:root:This is a warning log.
 ERROR:root:This is a error log.
 CRITICAL:root:This is a critical log
 
-`
+```
 ### 2. 那么问题来了
 
 问题1：为什么前面两条日志没有被打印出来？
@@ -215,7 +216,7 @@ handlers Python 3.3中新添加的配置项。该选项如果被指定，它应�
 
 ### 5.经过配置的日志输出
 先简单配置下日志器的日志级别
-`
+```
 logging.basicConfig(level=logging.DEBUG)
  
 logging.debug("This is a debug log.")
@@ -223,21 +224,21 @@ logging.info("This is a info log.")
 logging.warning("This is a warning log.")
 logging.error("This is a error log.")
 logging.critical("This is a critical log.")
-`
+```
 输出结果：
-`
+```
 DEBUG:root:This is a debug log.
 INFO:root:This is a info log.
 WARNING:root:This is a warning log.
 ERROR:root:This is a error log.
 CRITICAL:root:This is a critical log
-`
+```
 
 所有等级的日志信息都被输出了，说明配置生效了。
 
 在配置日志器日志级别的基础上，在配置下日志输出目标文件和日志格式
 
-`
+```
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(filename='my.log', level=logging.DEBUG, format=LOG_FORMAT)
  
@@ -246,18 +247,18 @@ logging.info("This is a info log.")
 logging.warning("This is a warning log.")
 logging.error("This is a error log.")
 logging.critical("This is a critical log.")
-`
+```
 此时会发现控制台中已经没有输出日志内容了，但是在python代码文件的相同目录下会生成一个名为'my.log'的日志文件，该文件中的内容为：
-`
+```
 2017-05-08 14:29:53,783 - DEBUG - This is a debug log.
 2017-05-08 14:29:53,784 - INFO - This is a info log.
 2017-05-08 14:29:53,784 - WARNING - This is a warning log.
 2017-05-08 14:29:53,784 - ERROR - This is a error log.
 2017-05-08 14:29:53,784 - CRITICAL - This is a critical log.
-`
+```
 
 在上面的基础上，我们再来设置下日期/时间格式
-`
+```
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
  
@@ -268,15 +269,15 @@ logging.info("This is a info log.")
 logging.warning("This is a warning log.")
 logging.error("This is a error log.")
 logging.critical("This is a critical log.")
-`
+```
 此时会在my.log日志文件中看到如下输出内容：
-`
+```
 05/08/2017 14:29:04 PM - DEBUG - This is a debug log.
 05/08/2017 14:29:04 PM - INFO - This is a info log.
 05/08/2017 14:29:04 PM - WARNING - This is a warning log.
 05/08/2017 14:29:04 PM - ERROR - This is a error log.
 05/08/2017 14:29:04 PM - CRITICAL - This is a critical log.
-`
+```
 掌握了上面的内容之后，已经能够满足我们平时开发中需要的日志记录功能。
 
 ### 6. 其他说明
@@ -294,23 +295,23 @@ logging.critical("This is a critical log.")
 
 #### 一个例子：
 在日志消息中添加exc_info和stack_info信息，并添加两个自定义的字端 ip和user
-'
+```
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(user)s[%(ip)s] - %(message)s"
 DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
  
 logging.basicConfig(format=LOG_FORMAT, datefmt=DATE_FORMAT)
 logging.warning("Some one delete the log file.", exc_info=True, stack_info=True, extra={'user': 'Tom', 'ip':'47.98.53.222'})
-`
+```
 
 输出结果：
-`
+```
 
 05/08/2017 16:35:00 PM - WARNING - Tom[47.98.53.222] - Some one delete the log file.
 NoneType
 Stack (most recent call last):
   File "C:/Users/wader/PycharmProjects/LearnPython/day06/log.py", line 45, in <module>
     logging.warning("Some one delete the log file.", exc_info=True, stack_info=True, extra={'user': 'Tom', 'ip':'47.98.53.222'})
-`
+```
 
 ## 四、logging模块日志流处理流程
 在介绍logging模块的高级用法之前，很有必要对logging模块所包含的重要组件以及其工作流程做个全面、简要的介绍，这有助于我们更好的理解我们所写的代码（将会触发什么样的操作）。
@@ -416,9 +417,10 @@ style：Python 3.2新增的参数，可取值为 '%', '{'和 '$'，如果不指�
 
 #### Filter类
 Filter可以被Handler和Logger用来做比level更细粒度的、更复杂的过滤功能。Filter是一个过滤器基类，它只允许某个logger层级下的日志事件通过过滤。该类定义如下：
-
+```
 class logging.Filter(name='')
     filter(record)
+```
 比如，一个filter实例化时传递的name参数值为'A.B'，那么该filter实例将只允许名称为类似如下规则的loggers产生的日志记录通过过滤：'A.B'，'A.B,C'，'A.B.C.D'，'A.B.D'，而名称为'A.BB', 'B.A.B'的loggers产生的日志则会被过滤掉。如果name的值为空字符串，则允许所有的日志事件通过过滤。
 
 filter方法用于具体控制传递的record记录是否能通过过滤，如果该方法返回值为0表示不能通过过滤，返回值为非0表示可以通过过滤。
@@ -467,7 +469,7 @@ filter方法用于具体控制传递的record记录是否能通过过滤，如�
 3）all.log要求按照时间进行日志切割，因此他需要用logging.handlers.TimedRotatingFileHandler; 而error.log没有要求日志切割，因此可以使用FileHandler;
 4）两个日志文件的格式不同，因此需要对这两个handler分别设置格式器；
 3. 代码实现
-`
+```
 import logging
 import logging.handlers
 import datetime
@@ -490,23 +492,23 @@ logger.info('info message')
 logger.warning('warning message')
 logger.error('error message')
 logger.critical('critical message')
-`
+```
 
 all.log文件输出
 
-`
+```
 2017-05-13 16:12:40,612 - DEBUG - debug message
 2017-05-13 16:12:40,612 - INFO - info message
 2017-05-13 16:12:40,612 - WARNING - warning message
 2017-05-13 16:12:40,612 - ERROR - error message
 2017-05-13 16:12:40,613 - CRITICAL - critical message
-`
+```
 
 error.log文件输出
-`
+```
 2017-05-13 16:12:40,612 - ERROR - log.py[:81] - error message
 2017-05-13 16:12:40,613 - CRITICAL - log.py[:82] - critical message
-`
+```
 ## 六、配置logging的几种方式
 作为开发者，我们可以通过以下3中方式来配置logging:
 

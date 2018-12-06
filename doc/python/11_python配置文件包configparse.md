@@ -31,7 +31,7 @@ ConfigParser模块在python中用来读取配置文件，配置文件的格式�
 ## 举例如下：
 
 ### 配置文件ini如下：(注意，也可以使用：替换=)
-`
+```
 [logging]
 level = 20
 path =
@@ -43,11 +43,11 @@ port=3306
 user=root
 password=123456
 
-`
+```
 
 ### 代码如下：
 
-`
+```
 import configparser
 from until.file_system import get_init_path
 
@@ -70,19 +70,20 @@ print('获取指定section下所有的键值对', items)
 value = conf.get('mysql', 'host')
 print('获取指定的section下的option', type(value), value)
 
-`
+```
 
 ### 运行结果如下：
 
+```
 file_path : /Users/xxx/Desktop/xxx/xxx/xxx.ini
 获取配置文件所有的section ['logging', 'mysql']
 获取指定section下所有option ['host', 'port', 'user', 'password']
 获取指定section下所有的键值对 [('host', '127.0.0.1'), ('port', '3306'), ('user', 'root'), ('password', '123456')]
 获取指定的section下的option <class 'str'> 127.0.0.1
-
+```
 ## 综合使用方法：
 
-`
+```
 import configparser
 """
 读取配置文件信息
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     res = con.get_config('logging', 'level')
     print(res)
 
-`
+```
 
 
 

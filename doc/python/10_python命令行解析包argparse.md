@@ -17,6 +17,7 @@ parser.parse_args()
 
 测试：
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py 
 
 yarving@yarving-VirtualBox /tmp $ python prog.py --help
@@ -32,6 +33,7 @@ prog.py: error: unrecognized arguments: -v
 yarving@yarving-VirtualBox /tmp $ python prog.py foo
 usage: prog.py [-h]
 prog.py: error: unrecognized arguments: foo
+```
 
 第一个没有任何输出和出错
 第二个测试为打印帮助信息，argparse会自动生成帮助文档
@@ -57,6 +59,7 @@ print args.echo
 ```
 执行测试如下
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py   
 usage: prog.py [-h] echo
 prog.py: error: too few arguments
@@ -72,6 +75,8 @@ optional arguments:
 
 yarving@yarving-VirtualBox /tmp $ python prog.py hahahaha
 hahahaha
+```
+
 定义了一个叫echo的参数，默认必选
 
 第一个测试为不带参数，由于echo参数为空，所以报错，并给出用法（usage）和错误信息
@@ -105,6 +110,7 @@ if args.verbosity:
 定义了可选参数-v或--verbosity，通过解析后，其值保存在args.verbosity变量中
 用法如下：
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py -v 1
 verbosity turned on
 
@@ -122,6 +128,8 @@ optional arguments:
 yarving@yarving-VirtualBox /tmp $ python prog.py -v 
 usage: prog.py [-h] [-v VERBOSITY]
 prog.py: error: argument -v/--verbosity: expected one argument
+````
+
 测试1中，通过-v来指定参数值
 测试2中，通过--verbosity来指定参数值
 测试3中，通过-h来打印帮助信息
@@ -148,6 +156,7 @@ if args.verbose:
 
 测试：
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py -v
 verbosity turned on
 
@@ -157,6 +166,8 @@ usage: prog.py [-h] [-v]
 optional arguments:
   -h, --help     show this help message and exit
   -v, --verbose  increase output verbosity
+```
+
 第一个例子中，-v没有指定任何参数也可，其实存的是True和False，如果出现，则其值为True，否则为False
 
 ## 6. 类型 type
@@ -180,6 +191,7 @@ print answer
 
 测试
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py 2
 4
 
@@ -195,6 +207,7 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
+```
 第一个测试为计算2的平方数，类型为int，正常
 第二个测试为一个非int数，报错
 第三个为打印帮助信息
@@ -229,6 +242,7 @@ else:
 
 测试如下：
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 -v 0
 16
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 -v 1
@@ -247,7 +261,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -v {0,1,2}, --verbosity {0,1,2}
-                        increase output verbosity
+                     increase output verbosity
+```
 测试1， 2， 3 为可选值范围，通过其值，打印不同的格式输出；
 测试4的verbosity值不在可选值范围内，打印错误
 测试5打印帮助信息
@@ -295,6 +310,7 @@ else:
 
 打印帮助信息时即显示calculate X to the power of Y
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py -h
 usage: prog.py [-h] [-v | -q] x y
 
@@ -308,16 +324,18 @@ optional arguments:
   -h, --help     show this help message and exit
   -v, --verbose
   -q, --quiet
+```
 
 ## 10. 互斥参数
 
 在上个例子中介绍了互斥的参数
-
+```
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-v", "--verbose", action="store_true")
 group.add_argument("-q", "--quiet", action="store_true")
+```
 第一行定义了一个互斥组，第二、三行在互斥组中添加了-v和-q两个参数，用上个例子中的程序进行如下测试：
-
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 2      
 4^2 == 16
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 2 -v
@@ -325,6 +343,7 @@ yarving@yarving-VirtualBox /tmp $ python prog.py 4 2 -v
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 2 -q
 16
 yarving@yarving-VirtualBox /tmp $ python prog.py 4 2 -q -v
+```
 可以看出，-q和-v不出现，或仅出现一个都可以，同时出现就会报错。
 可定义多个互斥组
 
@@ -333,7 +352,7 @@ yarving@yarving-VirtualBox /tmp $ python prog.py 4 2 -q -v
 介绍了这么多，有没有参数默认值该如何定义呢？
 修改prog.py内容如下：
 
-`
+```
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -354,10 +373,11 @@ elif args.verbosity == 1:
     print "{}^2 == {}".format(args.square, answer)
 else:
     print answer
-`
+```
 
 测试结果如下
 
+```
 yarving@yarving-VirtualBox /tmp $ python prog.py 8 
 8^2 == 64
 yarving@yarving-VirtualBox /tmp $ python prog.py 8 -v 0
@@ -366,4 +386,5 @@ yarving@yarving-VirtualBox /tmp $ python prog.py 8 -v 1
 8^2 == 64
 yarving@yarving-VirtualBox /tmp $ python prog.py 8 -v 2
 the square of 8 equals 64
+```
 可以看到如果不指定-v的值，args.verbosity的值默认为1，为了更清楚的看到默认值，也可以直接打印进行测试。
