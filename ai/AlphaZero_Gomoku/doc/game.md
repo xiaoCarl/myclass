@@ -43,3 +43,11 @@ last_move : int ,范围：0到width*height-1  最后一步棋
 --------------------------------------------------------------------------------------
 # game类
 
+## 属性
+board  定义棋盘实例
+
+## 方法
+1. graphic(self, board, player1, player2) :画棋盘
+2. start_play(self, player1, player2, start_player=0, is_shown=1) :人机比赛，缺省先手为player1， 更新界面的棋盘
+3. start_self_play(self, player, is_shown=0, temp=1e-3) :集群自己比赛训练，缺省不更新界面棋盘，temp =1e-3 这个变量是什么含义？ 
+
