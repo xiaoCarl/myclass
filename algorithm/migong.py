@@ -4,7 +4,11 @@
     the func of walk() is a recursive function.
 
 '''
+from __future__ import print_function
 import copy
+import time
+import os
+
 maze_1=[
       [1,0,1,1,1,1],
       [1,1,1,0,0,1],
@@ -34,13 +38,17 @@ class Maze(object):
     
     def walk(self,x,y):
 
+        if self._valid(x,y):
+            self.graphic(x,y)
+        else:
+            return False
+      
         if(x == self.end_x and y == self.end_y):
             self.maze[x][y]=2
-            print("successful!")
             self.success = 1 
             return True
     
-        if self.success !=1 and self._valid(x,y) :
+        if self.success !=1  :
             self.maze[x][y] = 2
             if ((self.walk( x-1, y)) or
                 (self.walk( x, y-1)) or
@@ -53,6 +61,34 @@ class Maze(object):
 
         return False
 
+    def graphic(self,x,y):
+        width  = len(self.maze)
+        height = len(self.maze)
+        
+        time.sleep(2)
+        os.system('clear')
+
+        print("Start Location: 0 0") 
+        print("End Location: ",self.end_x,self.end_y)
+        print("Current Loction:",x,y)
+        print()
+
+        for x in range(width):
+            print("{0:8}".format(x), end='' )
+        print('\r\n')
+      
+        for i in range(height - 1, -1, -1):
+            print("{0:4d}".format(i), end='')
+
+            for j in range(width):
+                p = self.maze[i][j]
+                if p == 1:
+                    print('_'.center(8), end='')
+                elif p == 2:
+                    print('O'.center(8), end='')
+                else:
+                    print('X'.center(8), end='')
+            print('\r\n\r\n')
 
 
 if __name__ == "__main__":
@@ -60,10 +96,8 @@ if __name__ == "__main__":
     kwargs['maze'] = copy.deepcopy(maze_1)
     kwargs['end_x']= 5
     kwargs['end_y'] =5
-    my_maze = Maze( **kwargs)
-    for i in range (len(my_maze.maze)):
-         print(my_maze.maze[i])
-    my_maze.walk(0,0)       
-    for i in range (len(my_maze.maze)):
-         print(my_maze.maze[i])
-
+    
+    my_maze=Maze(**kwargs)    
+    my_maze.walk(0,0)
+    my_maze.graphic(my_maze.end_x,my_maze.end_y)
+       
