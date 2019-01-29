@@ -105,4 +105,3 @@ if __name__ == "__main__":
     
     my_maze = Maze(**kwargs)    
     my_maze.walk(0,0)
-       
