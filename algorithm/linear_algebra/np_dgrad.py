@@ -40,4 +40,3 @@ def gradient_descent(X, y, alpha):
 optimal = gradient_descent(X, y, alpha)
 print('optimal:', optimal)
 print('error function:', error_function(optimal, X, y)[0,0])
-
