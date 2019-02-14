@@ -2,7 +2,7 @@
 import numpy as np
 
 
-m = 100
+m = 3
 x0_data = np.ones((m, 1))
 x1_data = np.float32(np.random.rand(2, m)).reshape(m,2) 
 x_data  = np.hstack((x0_data, x1_data))
@@ -74,10 +74,13 @@ def train(X_data,Y_data,optimizer,theta):
 optimizer = 0.5
 theta = np.array([1, 1, 1]).reshape(3,) #init thera
 
-#gradient_descent(x_data, y_data, optimizer,theta)
+print(x_data)
+print(y_data)
+theta = gradient_descent(x_data, y_data, optimizer,theta)
+print(theta)
 
-for step in xrange(0, 501):
-    theta = train(x_data, y_data, optimizer,theta)
-    if step % 20 == 0:
-        print(step, theta)
+#for step in xrange(0, 501):
+#    theta = train(x_data, y_data, optimizer,theta)
+#    if step % 20 == 0:
+#        print(step, theta)
 
