@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from board import Board
-from mcts import  MonteCarlo
+
 
 class Player(object):
     def get_action(self,board):
@@ -9,14 +9,6 @@ class Player(object):
         Get player next action.
         Return: the next action.
         '''
-        return action
-
-class MCTS_Player(Player):
-    def __init__(self):
-        self.mcts  = MonteCarlo()
-
-    def get_action(self,board):
-        action = 2
         return action
 
 
@@ -53,8 +45,8 @@ def run():
     my_board = Board()
 
     play1 = Human()
-    play2 = Human()
-    #m_mcst = MonteCarlo()
+    #play2 = Human()
+    play2 = MonteCarlo()
     my_board.start(play1, play2)
 
 

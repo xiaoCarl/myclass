@@ -36,17 +36,18 @@ class Board(object):
 
         self.player1 = player1
         self.player2 = player2
+        self.currentplayer = player1
+
         self.display()
-        state = 0
         while True:
-            player_in_turn = self.current_player(state)
+            player_in_turn = self.current_player()
             action = player_in_turn.get_action(self) 
-            state = self.next_state(state, action)
+            state = self.next_state(action)
             self.display()
             end ,winner = self.winner()
             if end:
                 if winner != -1:
-                    print("Game end. Winner is", self.players[winner])
+                    print("Game end. Winner is", self.players[winner-1])
                 else:
                     print("Game end. Tie")
                 return winner
@@ -90,17 +91,19 @@ class Board(object):
         '''
         return None
 
-    def next_state(self, state, action):
+    def next_state(self, action):
         '''
         Calculate the next state base on current state and action.
         state: the current state
         action: the current action
         Return: the next state
         '''
-        if self.current_player(state) == self.player1:
+        if self.currentplayer == self.player1:
             p = self.players[0]
+            self.currentplayer =self.player2
         else:
             p = self.players[1]   
+            self.currentplayer =self.player1
                 
         self.states[action] = p
         self.availables.remove(action)
@@ -125,18 +128,13 @@ class Board(object):
         '''
         return actions
 
-    def current_player(self, state):
+    def current_player(self):
         '''
         Gets the current player.
         state: the current state.
         Return: the current player number.
         '''
-        if state == 0: return self.player1  #inital
-        
-        if self.states[state] == 1 :
-            return self.player2
-        else :                      
-            return self.player1
+        return self.currentplayer
 
     def winner(self):
         '''
@@ -150,8 +148,8 @@ class Board(object):
         n = self.n_in_row
 
         moved = list(set(range(width * height)) - set(self.availables))
-        if len(moved) == 0:
-            return True, -1  
+        if len(moved) < 9:
+            return False, -1  
 
         for m in moved:
             h = m // width
@@ -173,8 +171,11 @@ class Board(object):
             if (w in range(n - 1, width) and h in range(height - n + 1) and
                     len(set(states.get(i, -1) for i in range(m, m + n * (width - 1), width - 1))) == 1):
                 return True, player
-
-        return False, -1
+        
+        if len(self.availables) == 0 :
+            return True ,-1  #tie
+        else: 
+            return False, -1
 
 
     def winner_message(self, winner):
