@@ -137,9 +137,8 @@ class MCTS(object):
         and 0 if it is a tie.
         """
         player = board.current_player()
-        begin = datetime.datetime.utcnow()
 
-        while datetime.datetime.utcnow() - begin < self.caculation_time:
+        while len(board.availables):
             end, winner = board.winner()
             if end:
                 break
@@ -158,9 +157,11 @@ class MCTS(object):
 
         Return: the selected action
         """
-        for n in range(self._n_playout):
+        begin = datetime.datetime.utcnow()
+        while datetime.datetime.utcnow() - begin < self.caculation_time:
             board_copy = copy.deepcopy(board)
             self._simulation(board_copy)
+
         return max(self._root._children.items(),
                    key=lambda act_node: act_node[1]._n_visits)[0]
 
