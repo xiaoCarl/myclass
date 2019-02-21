@@ -172,9 +172,14 @@ class Expert(object):
             self.move_value[move][3] = self.scan_right_updown(i,j, player)
             
             #表示一个方向已经可以是冲5了       
+            if (self.move_value[move][0] >= 397 or self.move_value[move][1] >= 397 or
+                self.move_value[move][2] >= 397 or self.move_value[move][3] >= 397 ):
+                return  move, self.max_value
+
+            #表示一个方向已经可以是冲4了
             if (self.move_value[move][0] >= 302 or self.move_value[move][1] >= 302 or
                 self.move_value[move][2] >= 302 or self.move_value[move][3] >= 302 ):
-                return  move, self.max_value
+                return  move, self.max_value-100
 
                 
 

@@ -27,8 +27,19 @@ class Board(object):
         self.states = defaultdict(lambda:0)
         self.availables = list(range(self.width * self.height))
 
-        self.last_move = -1
+        self.last_action = -1
 
+    def location_to_action(self,i,j):
+        """location = (i,j),move=i+j*width 
+        """
+        return i+j*self.width
+
+    def action_to_location(self,move):
+        """location = (i,j),dot=i+j*width 
+        """
+        j = move % self.width
+        i = move // self.height
+        return [i, j]
 
     def start(self,player1,player2):
         ''' 
@@ -66,6 +77,7 @@ class Board(object):
 
         print("Player1", self.players[0], "with X".rjust(3))
         print("Player2", self.players[1], "with O".rjust(3))
+        print("current play loc:",self.action_to_location(self.last_action))
         print()
         for x in range(self.width):
             print("{0:8}".format(x), end='')
