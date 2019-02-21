@@ -17,7 +17,8 @@ def run():
 
     my_board = Board()
     play1 = ExpertPlayer()
-    play2 = Human()
+#    play2 = Human()
+    play2 = ExpertPlayer()
 
     my_board.start(play1, play2) 
 

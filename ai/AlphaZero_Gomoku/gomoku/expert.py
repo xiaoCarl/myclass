@@ -141,7 +141,7 @@ class Expert(object):
             value += 1     
             grade = grade/10       #碰到空棋，就降低后续的黑棋权值
         else:                      #对手的棋子 
-            value -= 2    
+            value -= 10    
             return 0, value, grade   # 遇到对手棋,结束后续移动    
         return 1, value, grade   
 
@@ -165,9 +165,9 @@ class Expert(object):
                 return  move, self.max_value
 
             #表示一个方向已经可以是冲4了
-            if (self.move_value[move][0] >= 302 or self.move_value[move][1] >= 302 or
-                self.move_value[move][2] >= 302 or self.move_value[move][3] >= 302 ):
-                return  move, self.max_value-100
+            for k in range(4):
+               if self.move_value[move][k] >= 302 : 
+                   self.move_value[move][k] = 10000
 
                 
             #综合各个方向得分
