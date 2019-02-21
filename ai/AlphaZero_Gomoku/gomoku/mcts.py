@@ -92,7 +92,7 @@ class TreeNode(object):
 class MCTS(object):
     """A simple implementation of Monte Carlo Tree Search."""
 
-    def __init__(self, policy_value_fn, c_puct=5, n_playout=10000):
+    def __init__(self, policy_value_fn, c_puct=5, simulat_time=5):
         """
         policy_value_fn: a function that takes in a board state and outputs
             a list of (action, probability) tuples and also a score in [-1, 1]
@@ -105,8 +105,7 @@ class MCTS(object):
         self._root = TreeNode(None, 1.0)
         self._policy = policy_value_fn
         self._c_puct = c_puct
-        self._n_playout = n_playout
-        self.caculation_time = datetime.timedelta(seconds=5)
+        self.caculation_time = datetime.timedelta(seconds=simulat_time)
 
     def _simulation(self, board):
         """Run a single playout from the root to the leaf, getting a value at
@@ -181,8 +180,8 @@ class MCTS(object):
 
 class MCTSPlayer(Player):
     """AI player based on MCTS"""
-    def __init__(self, c_puct=5, n_playout=50):
-        self.mcts = MCTS(policy_value_fn, c_puct, n_playout)
+    def __init__(self, c_puct=5, simulat_time=50):
+        self.mcts = MCTS(policy_value_fn, c_puct, simulat_time)
 
     def set_player_ind(self, p):
         self.player = p
@@ -202,10 +201,3 @@ class MCTSPlayer(Player):
     def __str__(self):
         return "MCTS {}".format(self.player)
 
-
-if __name__ == '__main__':
-    my_board = Board()
-    play1 = MCTSPlayer()
-    play2 = MCTSPlayer()
-
-    my_board.start(play1, play2)
