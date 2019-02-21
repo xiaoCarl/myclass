@@ -1,4 +1,6 @@
 from __future__ import print_function
+from collections import defaultdict
+
 
 class Board(object):
     '''
@@ -16,13 +18,13 @@ class Board(object):
         states: The board's states is stored as a dict, key is the move (as a location) on the board,value is the player
         availables: keep available moves in a list
         '''
-        self.width = 8
-        self.height = 8
+        self.width = 12
+        self.height = 12
         self.n_in_row =5
         self.num_players = 2    
         self.players = [1,2]
        
-        self.states = {}
+        self.states = defaultdict(lambda:0)
         self.availables = list(range(self.width * self.height))
 
         self.last_move = -1

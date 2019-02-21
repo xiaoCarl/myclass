@@ -206,6 +206,6 @@ class MCTSPlayer(Player):
 if __name__ == '__main__':
     my_board = Board()
     play1 = MCTSPlayer()
-    play2 = Human()
+    play2 = MCTSPlayer()
 
     my_board.start(play1, play2)
