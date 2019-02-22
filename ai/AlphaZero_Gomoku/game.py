@@ -6,17 +6,20 @@
 from __future__ import print_function
 import numpy as np
 
+from collections import defaultdict
 
 class Board(object):
     """board for the game"""
 
     def __init__(self, **kwargs):
-        self.width = int(kwargs.get('width', 8))
-        self.height = int(kwargs.get('height', 8))
+        self.width = int(kwargs.get('width', 9))
+        self.height = int(kwargs.get('height', 9))
         # board states stored as a dict,
         # key: move as location on the board,
         # value: player as pieces type
-        self.states = {}
+        
+        self.states = defaultdict(lambda:0)        
+        
         # need how many pieces in a row to win
         self.n_in_row = int(kwargs.get('n_in_row', 5))
         self.players = [1, 2]  # player1 and player2
@@ -28,7 +31,7 @@ class Board(object):
         self.current_player = self.players[start_player]  # start player
         # keep available moves in a list
         self.availables = list(range(self.width * self.height))
-        self.states = {}
+        self.states = defaultdict(lambda:0)
         self.last_move = -1
 
     def move_to_location(self, move):
@@ -187,17 +190,22 @@ class Game(object):
                         print("Game end. Tie")
                 return winner
 
-    def start_self_play(self, player, is_shown=0, temp=1e-3):
+    def start_self_play(self, player, expert, is_shown=0, temp=1e-3):
         """ start a self-play game using a MCTS player, reuse the search tree,
         and store the self-play data: (state, mcts_probs, z) for training
         """
         self.board.init_board()
         p1, p2 = self.board.players
+        players = {p1: player, p2: expert}
         states, mcts_probs, current_players = [], [], []
         while True:
-            move, move_probs = player.get_action(self.board,
+            current_player = self.board.get_current_player()
+            player_in_turn = players[current_player]
+            move, move_probs = player_in_turn.get_action(self.board,
                                                  temp=temp,
                                                  return_prob=1)
+            print(current_player, move, move_probs)
+            
             # store the data
             states.append(self.board.current_state())
             mcts_probs.append(move_probs)
