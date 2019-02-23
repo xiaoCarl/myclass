@@ -6,6 +6,7 @@ from collections import defaultdict
 import logging
 from mcts_alphaZero import MCTSPlayer
 import numpy as  np
+import random
 
 
 class Expert(object):
@@ -182,16 +183,23 @@ class Expert(object):
                                        self.move_value[move][2] + \
                                        self.move_value[move][3] 
 
-        move = max(self.board.availables,key = lambda x:self.move_value[x][4])  
+
+        
+
+        max_value = max(self.move_value[i][4] for i in self.board.availables)
 
         value_sum = sum(self.move_value[i][4] for i in self.board.availables )      
 
         probs = np.zeros(self.board.width*self.board.height)
 
+        move_list=[]
         for i in range(self.board.width*self.board.height): #计算每个位置的概率
-            probs[i] = 1.0*self.move_value[i][4]/value_sum  
+            probs[i] = 1.0*self.move_value[i][4]/value_sum
+            if(self.move_value[i][4] == max_value): 
+                move_list.append(i)
+        move = random.choice(move_list)           
 
-        return move, self.move_value[move][4], probs
+        return move, max_value, probs
  
     def get_move(self,board):
         self.board = board        

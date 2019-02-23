@@ -8,6 +8,7 @@ Input your move in the format: 2,3
 
 from __future__ import print_function
 import pickle
+from expert import ExpertPlayer
 from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
@@ -84,4 +85,12 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    #run()
+    board = Board()
+    game = Game(board)
+    human = Human()
+    expert_player = ExpertPlayer()
+
+    game.start_play(human, expert_player, start_player=1, is_shown=1)
+
+
