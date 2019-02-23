@@ -7,12 +7,14 @@ An implementation of the training pipeline of AlphaZero for Gomoku
 
 from __future__ import print_function
 import random
+import logging
 import numpy as np
 from collections import defaultdict, deque
 from expert import ExpertPlayer
 from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import MCTSPlayer
+#from policy_value_net_numpy import PolicyValueNetNumpy as  PolicyValueNet
 #from policy_value_net import PolicyValueNet  # Theano and Lasagne
 #from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 from policy_value_net_tensorflow import PolicyValueNet # Tensorflow
@@ -60,7 +62,9 @@ class TrainPipeline():
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
                                       is_selfplay=1)
-        self.expert_player = ExpertPlayer(self.mcts_player)
+        self.expert_player = ExpertPlayer(mcts_player=self.mcts_player,
+                                          is_selfplay=1) 
+        #update mcts tree 
 
     def get_equi_data(self, play_data):
         """augment the data set by rotation and flipping
@@ -127,7 +131,7 @@ class TrainPipeline():
         explained_var_new = (1 -
                              np.var(np.array(winner_batch) - new_v.flatten()) /
                              np.var(np.array(winner_batch)))
-        print(("kl:{:.5f},"
+        logging.info(("kl:{:.5f},"
                "lr_multiplier:{:.3f},"
                "loss:{},"
                "entropy:{},"
@@ -151,6 +155,9 @@ class TrainPipeline():
                                          n_playout=self.n_playout)
         pure_mcts_player = MCTS_Pure(c_puct=5,
                                      n_playout=self.pure_mcts_playout_num)
+        
+        expert_player = ExpertPlayer()
+
         win_cnt = defaultdict(int)
         for i in range(n_games):
             winner = self.game.start_play(current_mcts_player,
@@ -159,7 +166,7 @@ class TrainPipeline():
                                           is_shown=0)
             win_cnt[winner] += 1
         win_ratio = 1.0*(win_cnt[1] + 0.5*win_cnt[-1]) / n_games
-        print("num_playouts:{}, win: {}, lose: {}, tie:{}".format(
+        logging.info("num_playouts:{}, win: {}, lose: {}, tie:{}".format(
                 self.pure_mcts_playout_num,
                 win_cnt[1], win_cnt[2], win_cnt[-1]))
         return win_ratio
@@ -169,18 +176,18 @@ class TrainPipeline():
         try:
             for i in range(self.game_batch_num):
                 self.collect_selfplay_data(self.play_batch_size)
-                print("batch i:{}, episode_len:{}".format(
+                logging.info("batch i:{}, episode_len:{}".format(
                         i+1, self.episode_len))
                 if len(self.data_buffer) > self.batch_size:
                     loss, entropy = self.policy_update()
                 # check the performance of the current model,
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
-                    print("current self-play batch: {}".format(i+1))
+                    logging.info("current self-play batch: {}".format(i+1))
                     win_ratio = self.policy_evaluate()
                     self.policy_value_net.save_model('./current_policy.model')
                     if win_ratio > self.best_win_ratio:
-                        print("New best policy!!!!!!!!")
+                        logging.info("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
                         self.policy_value_net.save_model('./best_policy.model')
@@ -189,9 +196,12 @@ class TrainPipeline():
                             self.pure_mcts_playout_num += 1000
                             self.best_win_ratio = 0.0
         except KeyboardInterrupt:
-            print('\n\rquit')
+            logging.error('\n\rquit')
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(filename = 'train.log', 
+                        level=logging.DEBUG)
     training_pipeline = TrainPipeline()
     training_pipeline.run()

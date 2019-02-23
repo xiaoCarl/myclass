@@ -204,7 +204,7 @@ class Game(object):
             move, move_probs = player_in_turn.get_action(self.board,
                                                  temp=temp,
                                                  return_prob=1)
-            print(current_player, move, move_probs)
+            #print(current_player, move, move_probs)
             
             # store the data
             states.append(self.board.current_state())
