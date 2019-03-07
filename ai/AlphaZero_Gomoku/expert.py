@@ -7,7 +7,7 @@ import logging
 from mcts_alphaZero import MCTSPlayer
 import numpy as  np
 import random
-
+import heapq
 
 class Expert(object):
     def __init__(self):
@@ -172,7 +172,7 @@ class Expert(object):
             #表示一个方向已经可以是冲4了
             for k in range(4):
                if self.move_value[move][k] >= 390 :
-                   self.move_value[move][k] = 5000
+                   self.move_value[move][k] = 2000
                elif self.move_value[move][k] >= 302 :
                    self.move_value[move][k] = 1000
 
@@ -181,25 +181,33 @@ class Expert(object):
             self.move_value[move][4] = self.move_value[move][0] + \
                                        self.move_value[move][1] + \
                                        self.move_value[move][2] + \
-                                       self.move_value[move][3] 
+                                       self.move_value[move][3] + \
+                                       3 
 
 
         
-
         max_value = max(self.move_value[i][4] for i in self.board.availables)
 
         value_sum = sum(self.move_value[i][4] for i in self.board.availables )      
 
+        print(self.move_value)
+        if value_sum == 0: value_sum=1
         probs = np.zeros(self.board.width*self.board.height)
 
         move_list=[]
         for i in range(self.board.width*self.board.height): #计算每个位置的概率
             probs[i] = 1.0*self.move_value[i][4]/value_sum
-            if(self.move_value[i][4] == max_value): 
-                move_list.append(i)
-        move = random.choice(move_list)           
-
-        return move, max_value, probs
+            
+        if len(self.board.availables) > 3:
+            move_list = heapq.nlargest(3,self.move_value,key=lambda i : self.move_value[i][4])
+            print move_list
+       
+            move = random.choice(move_list) 
+        else:
+            move = random.choice(self.board.availables)            
+          
+        print move
+        return move, self.move_value[move][4], probs
  
     def get_move(self,board):
         self.board = board        
@@ -213,13 +221,13 @@ class Expert(object):
 
         m_move,m_value,m_probs = self.evaluate_all_value(m_player_id)
         
-    #    logging.info("loaction:{loc},value:{value}, probs:{probs}".format(
-    #    	         loc = self.move_to_location(m_move),value=m_value, probs=m_probs))
+#        logging.info("loaction:{loc},value:{value}, probs:{probs}".format(
+#        	         loc = self.move_to_location(m_move),value=m_value, probs=m_probs))
         
         s_move,s_value,s_probs = self.evaluate_all_value(s_player_id)
         
-    #    logging.info("O_loaction:{loc},value:{value}, probs:{probs}".format(
-    #    	          loc = self.move_to_location(s_move),value = s_value,probs=s_probs))
+#        logging.info("O_loaction:{loc},value:{value}, probs:{probs}".format(
+#        	          loc = self.move_to_location(s_move),value = s_value,probs=s_probs))
 
         if m_value >= s_value :
             return m_move ,m_probs
@@ -237,10 +245,15 @@ class ExpertPlayer(object):
     def set_player_ind(self, p):
         self.player = p
 
+    def reset_player(self):
+        self.mcts_player.mcts.update_with_move(-1)
+    
+
     def get_action(self, board, temp=0, return_prob=0):
         sensible_moves = board.availables
         if len(sensible_moves) > 0:
             move,probs = self.expert.get_move(board)
+            print(move)
             if self.is_selfplay:
                 self.mcts_player.mcts.update_with_move(move) #update mcts tree node
             if return_prob:

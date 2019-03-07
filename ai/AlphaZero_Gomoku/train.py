@@ -64,6 +64,9 @@ class TrainPipeline():
                                       is_selfplay=1)
         self.expert_player = ExpertPlayer(mcts_player=self.mcts_player,
                                           is_selfplay=1) 
+        self.expert_player0 = ExpertPlayer(mcts_player=self.mcts_player,
+                                          is_selfplay=1) 
+
         #update mcts tree 
 
     def get_equi_data(self, play_data):
@@ -91,9 +94,12 @@ class TrainPipeline():
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
         for i in range(n_games):
-            winner, play_data = self.game.start_self_play(self.mcts_player,self.expert_player,
+            winner, play_data = self.game.start_self_play(self.expert_player0,self.expert_player,
                                                           temp=self.temp)
+            print(play_data)
             play_data = list(play_data)[:]
+ 
+            print(play_data)
             self.episode_len = len(play_data)
             # augment the data
             play_data = self.get_equi_data(play_data)
