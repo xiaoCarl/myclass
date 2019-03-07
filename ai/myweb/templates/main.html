@@ -1,0 +1,324 @@
+<!DOCTYPE html> 
+<html> 
+<head lang="en"> 
+ <meta charset="UTF-8"> 
+ <title></title> 
+ <style> 
+
+  #chess { 
+   display: inline-block; 
+  } 
+
+  #chat { 
+   display: inline-block; 
+   position: absolute; 
+   margin-top: 10px; 
+   margin-left: 50px; 
+   color: #000;
+  } 
+
+  canvas { 
+   margin: 20px 0 0 20px; 
+   width: 544px; 
+   padding: 20px;
+   display: block; 
+   background: url(/static/images/wood.jpg)  14px 14px rgb(250, 250, 250); 
+   box-shadow: 8px 8px 32px #999; 
+   -webkit-box-shadow: 8px 8px 32px #999; 
+   -moz-box-shadow: 8px 8px 32px #999; 
+  } 
+
+  #box { 
+   display: block; 
+   margin: 0px 0px 0px 0px; 
+   color: #000;
+  }
+
+  span { 
+   font: 24px "微软雅黑"; 
+   display: inline-block; 
+   height: 50px; 
+  } 
+
+  #username { 
+   margin-top: 10px; 
+   display: inline-block; 
+   height: 50px; 
+   font: 16px "微软雅黑"; 
+   color: #000; 
+   background-color: #ffffff; 
+  } 
+
+  #btn { 
+   margin-top: 0px; 
+   display: block; 
+   width: 100px; 
+   height: 50px; 
+   font: 16px "微软雅黑"; 
+   color: #000; 
+   background-color: #dd3333; 
+  }
+
+  #content{
+   margin: 20px 0 0 0px; 
+   display: block; 
+   color: #000; 
+   background-color: #ffffff; 
+  }
+
+  #msg { 
+   margin-top: 20px; 
+   display: inline-block; 
+   height: 50px; 
+   font: 16px "微软雅黑"; 
+   color: #000; 
+   background-color: #ffffff; 
+  } 
+
+  #websocket{
+   font: 20px "微软雅黑"; 
+  }
+
+  button{
+   margin-top: 10px; 
+   display: inline; 
+   height: 50px; 
+   width: 80px;
+   font: 16px "微软雅黑"; 
+   color: #000; 
+   background-color: #aaaa33; 
+  }
+
+ </style> 
+</head> 
+
+<body> 
+
+<div id="chess">
+  <div id="chessboard">
+    <canvas width="544" height="544" id="cas"> 
+     您的浏览器不支持canvas，请升级到最新的浏览器 
+    </canvas>
+  </div>
+</div>
+
+<div id="chat"> 
+    <div id="websocket">
+      <p>用户名：<input type="text" id="username" size="40" maxlength="80">
+      <button onclick="open_ws()" >登录</button></p>
+    </div>
+
+    <div id="message">
+     <textarea id="content" rows="20" cols="80" readonly="true">欢迎来聊</textarea>
+    </div>
+    
+    <div id="websocket">
+      <input type="text" id="msg" size="60" maxlength="100">
+      <button onclick="send_msg()" >发送</button>
+    </div>
+    
+    <div id="box"> 
+     <span id="txt"></span> 
+     <input type="button" id="btn" value="开始"/> 
+    </div> 
+</div>
+
+<script>
+
+
+var ws = null;
+var ws_chess = null;
+
+function open_ws() {
+
+  var username = document.getElementById('username').value;
+
+  if (ws != null){
+    ws.close();
+  }
+  ws = new WebSocket('ws://10.43.177.246:5000/chat/' + username);
+
+  ws.onmessage = function chatmessage(data) {
+    var msg = JSON.parse(data.data);
+    var content = document.getElementById('content');
+    var msgtype = msg.msgtype;
+
+    if (msgtype == "chess"){
+      ;//drawChess(msg.Color,msg.Px,msg.Py);
+    }else if (msgtype == "chat"){
+      content.innerHTML += msg.from_user + ':' + msg.msg + '\n';
+      content.scrollTop = content.scrollHeight;
+    }
+    //invalid message type. do nothing.
+  };
+
+  ws.onopen = function(event){
+    content.innerHTML += '登录成功。\n';
+    content.scrollTop = content.scrollHeight;
+  };
+
+  ws.onerror = function(){
+    content.innerHTML += '连接错误。\n';
+    content.scrollTop = content.scrollHeight;
+    ws.close();
+  };
+
+  ws.onclose = function(){
+    content.innerHTML += '连接关闭，退出登录。\n';
+    content.scrollTop = content.scrollHeight;
+    ws = null;
+  };
+
+}
+
+function open_ws_chess() {
+  //var username = document.getElementById('username').value;
+  
+  if(ws_chess != null){
+    ws_chess.close();
+  }
+
+  //ws_chess= new WebSocket('ws://' + window.location.host +'playchess/');
+  ws_chess= new WebSocket("ws://10.43.177.163:8000/playchess/");
+
+  
+  ws_chess.onmessage = function chessmessage(data) {
+    var msg = JSON.parse(data.data);
+    var msgtype = msg.msgtype;
+
+    if (msgtype == "chess"){
+      drawChess(msg.Color,msg.Px,msg.Py);
+    }
+  };
+
+  ws_chess.onopen = function(event){
+    content.innerHTML += 'chess: 连接成功。\n';
+    content.scrollTop = content.scrollHeight;
+  };
+
+  ws_chess.onerror = function(){
+    content.innerHTML += 'chess: 连接错误。\n';
+    content.scrollTop = content.scrollHeight;
+  };
+
+  ws_chess.onclose = function(){
+    content.innerHTML += 'chess: 连接关闭。\n';
+    content.scrollTop = content.scrollHeight;
+    ws_chess = null;
+  };
+
+}
+
+function send_msg() {
+    var message = document.getElementById('msg').value;
+    var send_obj = {msgtype:'chat', to_user:'All', msg:message};
+    if(ws)
+    {
+        ws.send(JSON.stringify(send_obj));
+    }
+
+}
+
+
+ var flag = true; //true代表白棋下的棋子，false代表黑棋下的棋子 
+ var isWin = false; //判断是否结束，true结束，false没有结束 
+ var step = 36; //设置每个格子的宽高都是40 
+
+ var txt = document.getElementById("txt"); 
+ var btn = document.getElementById("btn"); 
+ var cas = document.getElementById("cas");// 获取画布对象 
+ var ctx = cas.getContext("2d"); //画布上下文 
+  
+// 创建图片对象 
+ var img_b = new Image(); 
+ img_b.src = "/static/images/black.png";//设置黑棋图片路径 
+ var img_w = new Image(); 
+ img_w.src = "/static/images/white.png";//设置白棋图片路径 
+  
+ //绘制棋盘 
+function drawLine() { 
+  ctx.strokeStyle="black"; 
+  width = cas.width-40;
+  height = cas.height-40;
+  for (var i = 0; i <= width / step; i++) { 
+   // 画竖线 
+   ctx.moveTo((i + 0) * step + 20, 20); 
+   ctx.lineTo((i + 0) * step + 20, height+20); 
+
+   // 画横线 
+   ctx.moveTo(20, (i + 0) * step+20); 
+   ctx.lineTo(width+20, (i + 0) * step+20); 
+   ctx.stroke(); 
+  } 
+ } 
+ //获取鼠标点击的位置 
+ cas.onclick = function (e) { 
+  // 先判断游戏是否结束 
+  if (isWin) { 
+   alert("游戏已经结束，请刷新重新开始！"); 
+   return 0; 
+  } 
+  //判断棋子显示的地方，四条边上不显示棋子， 
+  //鼠标点击的位置减去边框距离页面的上和左的距离（10），减去一个格子宽高的一半（18） 
+  var x = (e.clientX - 20 - 0 - 22)/ 36; 
+  var y = (e.clientY - 20 - 0 - 22)/ 36; 
+  
+  //进行取整来确定棋子最终显示的区域 
+  x = parseInt(x); 
+  y = parseInt(y); 
+  //如果超出棋盘或者在棋盘边界直接返回，边界上不能画棋子 
+  if(x < 0 || x >= 15 || y < 0 || y >= 15) { 
+   return; 
+  } 
+
+  var color = 2;
+
+  drawChess(2, x, y); //调用函数来画棋子
+  
+  var send_obj = {msgtype:'chess', Color:color, Px:x, Py:y};
+ // ws_chess.send(JSON.stringify(send_obj));
+
+} 
+
+ //画棋子 
+function drawChess(num, x, y) { 
+  //根据x和y确定图片显示位置,让图片显示在十字线中间，因为一个格子为40，图片大小为30，所以40-30/2等于25，所以需要加上25 
+  var x0 = x * step + 5 - 0; 
+  var y0 = y * step + 5 - 0; 
+  if (num == 1) { 
+   //绘制白棋 
+   //ctx.fillStyle="#FF0000";
+   //ctx.arc(x0, y0, 20, 0, 1, false);
+   ctx.drawImage(img_w, x0, y0); 
+  } else if (num == 2) { 
+   // 绘制黑棋 
+   //ctx.fillStyle="#0000FF";
+   //ctx.arc(x0, y0, 20, 0, 1, false);
+
+   ctx.drawImage(img_b, x0, y0); 
+  } 
+  //调用函数判断输赢 
+  //judge(num, x, y); 
+} 
+ 
+ //重新开始 
+btn.onclick = function() { 
+  flag = true; 
+  isWin = false; 
+  
+  ctx.clearRect(0, 0, 640, 640); 
+  txt.innerHTML = ""; 
+  drawLine(); 
+
+  open_ws_chess();
+
+  
+  btn.value = "重新开始";
+
+} 
+ 
+ //init the chessboard
+drawLine(); 
+</script> 
+</body> 
+</html> 
