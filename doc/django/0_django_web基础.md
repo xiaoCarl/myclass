@@ -39,11 +39,11 @@ Django 框架的核心组件有：
 * 设计者友好的模板语言
 * 缓存系统。
 
-![django核心功能](/img/django_view.jpg)
+![django核心功能](img/django_view.jpg)
 
 ### django的MVC定义
 
-![django的MTV与MVC对比](/img/django_mvc0.jpg)
+![django的MTV与MVC对比](img/django_mvc0.jpg)
 
 ### WSGI接口
 WSGI是Web Server Gateway Interface的缩写，是Python应用程序或框架和Web服务器之间的一种接口，
@@ -51,23 +51,23 @@ WSGI是Web Server Gateway Interface的缩写，是Python应用程序或框架和
 
 WSGI是作为Web服务器与Web应用程序或应用框架之间的一种低级别的接口，以提升可移植Web应用开发的共同点。WSGI是基于现存的[[CGI]]标准而设计的。
 
-![WSGI](/img/django_wsgi.png)
+![WSGI](img/django_wsgi.png)
 
-![WSGI示意图1](/img/django_wsgi2.jpg)
+![WSGI示意图1](img/django_wsgi2.jpg)
 
-![WSGI示意图2](/img/django_wsgi5.jpg)
+![WSGI示意图2](img/django_wsgi5.jpg)
 
 ### django的架构
 
-![django的整体架构1](/img/django_arc4.jpg)
+![django的整体架构1](img/django_arc4.jpg)
 
-![django的整体架构](/img/django_arc1.jpg)
+![django的整体架构](img/django_arc1.jpg)
 
-![django的整体架构](/img/django_arc2.jpg)
+![django的整体架构](img/django_arc2.jpg)
 
 ### django的文件对应概念
 
-![django的文件](/img/django_arc3.jpg)
+![django的文件](img/django_arc3.jpg)
 
 ### websocket
 
@@ -78,7 +78,7 @@ WSGI是作为Web服务器与Web应用程序或应用框架之间的一种低级�
 参考阅读1：[为什么需要websocket协议](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
 
 
-![django基于channels实现websocket的框架](/img/django-websockt-http.png)
+![django基于channels实现websocket的框架](img/django-websockt-http.png)
 
 
 ### JSON数据格式
@@ -87,4 +87,4 @@ JSON(JavaScript Object Notation, JS 对象简谱) 是一种轻量级的数据交
 简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言。 
 易于人阅读和编写，同时也易于机器解析和生成，并有效地提升网络传输效率。
 
-![json](/img/json.jpg)
+![json](img/json.jpg)
