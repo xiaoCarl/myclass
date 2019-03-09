@@ -77,7 +77,6 @@ WSGI是作为Web服务器与Web应用程序或应用框架之间的一种低级�
 
 参考阅读1：[为什么需要websocket协议](http://www.ruanyifeng.com/blog/2017/05/websocket.html)
 
-
 ![django基于channels实现websocket的框架](img/django-websockt-http.png)
 
 
