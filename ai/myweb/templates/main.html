@@ -40,10 +40,11 @@
    height: 50px; 
   } 
 
-  #username { 
+  #myList { 
    margin-top: 10px; 
    display: inline-block; 
-   height: 50px; 
+   width: 200px; 
+   height:  50px; 
    font: 16px "微软雅黑"; 
    color: #000; 
    background-color: #ffffff; 
@@ -66,14 +67,13 @@
    background-color: #ffffff; 
   }
 
-  #msg { 
-   margin-top: 20px; 
-   display: inline-block; 
-   height: 50px; 
-   font: 16px "微软雅黑"; 
+  #whoisfist
+  {
+   margin: 100px 100px 100px 100px; 
+   display: block; 
    color: #000; 
    background-color: #ffffff; 
-  } 
+  }
 
   #websocket{
    font: 20px "微软雅黑"; 
@@ -103,21 +103,28 @@
 </div>
 
 <div id="chat"> 
-    <div id="websocket">
-      <p>用户名：<input type="text" id="username" size="40" maxlength="80">
-      <button onclick="open_ws()" >设置</button></p>
-    </div>
 
     <div id="message">
-     <textarea id="content" rows="20" cols="80" readonly="true">欢迎来聊</textarea>
+     <textarea id="content" rows="15" cols="80" readonly="true">欢迎来下棋</textarea>
     </div>
-    
-    <div id="websocket">
-      <input type="text" id="msg" size="60" maxlength="100">
-      <button onclick="send_msg()" >发送</button>
-    </div>
-    
+
     <div id="box"> 
+     <span id="txt"></span> 
+      <form>
+      请选择对手：
+      <select id="myList" onchange="player()">
+      <option>专家</option>
+      <option>中级</option>
+      <option>初级</option>
+      </select>
+      </form>
+
+      <span id="txt"></span> 
+      请选择先手：
+      <form>
+      <input type="radio" name="whoisfist" onclick="check(this.value)" value="Machine">Machine<br />
+      <input type="radio" name="whoisfist" onclick="check(this.value)" value="Me">Me <br />
+      </form>
      <span id="txt"></span> 
      <input type="button" id="btn" value="开始"/> 
     </div> 
@@ -140,10 +147,13 @@ for (var i = 0; i < 15; i++) {
     } 
 } 
 
+var playinfo =''
 var txt = document.getElementById("txt"); 
 var btn = document.getElementById("btn"); 
 var cas = document.getElementById("cas");// 获取画布对象 
 var ctx = cas.getContext("2d"); //画布上下文 
+var mylist=document.getElementById("myList") 
+var whoisfirst_txt=''
   
 // 创建图片对象 
 var img_b = new Image(); 
@@ -156,7 +166,21 @@ var reply_msg
 //init the chessboard
 drawLine(); 
 
-//建立websocket的连接，并与服务器端进行消息收发
+
+function player()
+{
+  playinfo +='\n'
+  playinfo += '对手:'+ mylist.options[mylist.selectedIndex].text
+}
+
+function check(whoisfist)
+{
+  playinfo += '先手:'+ whoisfist +'\n';
+  whoisfirst_txt = whoisfist
+}
+
+
+//建立websocket的连接，并
 function open_ws_chess() {
     
     ws_chess= new WebSocket('ws://' + window.location.host +'/playchess/');
@@ -167,8 +191,8 @@ function open_ws_chess() {
         reply_msg = msg 
         if (msgtype == "chess"){
             if(msg.end == true){ //对局已经结束
+                drawChess(msg.Color,msg.Px,msg.Py);  
                 if(msg.winner == 2){
-                    drawChess(msg.Color,msg.Px,msg.Py);  
                     alert("白棋获胜，请刷新重新开始！"); 
                 }
                 else if(msg.winner == 1){
@@ -186,12 +210,17 @@ function open_ws_chess() {
     };
 
     ws_chess.onopen = function(event){
-        content.innerHTML += 'chess: 连接成功。\n';
+        content.innerHTML += 'chess: 连接成功。\n'+playinfo;
         content.scrollTop = content.scrollHeight;
+        var send_obj = { msgtype:'playinfo', 
+                         player:mylist.options[mylist.selectedIndex].text,
+                         whoisfirst:whoisfirst_txt};
+        ws_chess.send(JSON.stringify(send_obj));
+
     };
 
     ws_chess.onerror = function(){
-      content.innerHTML += 'chess: 连接错误。\n';
+      content.innerHTML += 'chess: 连接错误。\n'+playinfo;
       content.scrollTop = content.scrollHeight;
     };
 
@@ -252,10 +281,16 @@ cas.onclick = function (e) {
         return 0; 
     } 
 
-    drawChess(2, x, y); //调用函数来画棋子
+    if (whoisfirst_txt == 'Me'){
+      color = 1
+    }
+    else{
+       color =2
+    }
+    drawChess(color, x, y); //调用函数来画棋子
     isturn = false;
  
-    var send_obj = {msgtype:'chess', Color:2, Px:x, Py:y};
+    var send_obj = {msgtype:'chess', Color:color, Px:x, Py:y};
     ws_chess.send(JSON.stringify(send_obj));
 } 
 
@@ -265,15 +300,15 @@ function drawChess(num, x, y) {
 
     var x0 = x * step + 5 - 0; 
     var y0 = y * step + 5 - 0; 
-    if (num == 1) { 
+    if (num == 2) { 
         //绘制白棋 
         ctx.drawImage(img_w, x0, y0); 
-        arr[x][y] = 1; //白子 
+        arr[x][y] = 2; //白子 
     } 
-    else if (num == 2) { 
+    else if (num == 1) { 
         // 绘制黑棋 
         ctx.drawImage(img_b, x0, y0); 
-        arr[x][y] = 2; //黑子 
+        arr[x][y] = 1; //黑子 
     } 
 } 
  

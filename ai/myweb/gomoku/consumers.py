@@ -12,8 +12,6 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):  
         self.accept()
         self.queue = Queue(maxsize=1)  #定义一个queue，作为两个线程的交互数据
-        start_game_thread = threading.Thread(target=start_game,args=(self,))
-        start_game_thread.start()
 
     def disconnect(self, close_code):
         pass
@@ -21,7 +19,12 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         logging.info("{}".format(text_data_json))
-        if text_data_json['msgtype'] == 'chess' :
+
+        if text_data_json['msgtype'] == 'playinfo':
+            start_game_thread = threading.Thread(target=start_game,
+                args=(self,text_data_json['player'],text_data_json['whoisfirst']))
+            start_game_thread.start()
+        elif text_data_json['msgtype'] == 'chess' :
             self.queue.put(text_data_json)  #放入接收的数据
 
 
@@ -40,7 +43,7 @@ class WebPlayer(object):
     def reply(self,end,winner,color,x,y):
         reply_data={}
         reply_data['msgtype'] = 'chess'
-        reply_data['Color'] = 1
+        reply_data['Color'] = color
         reply_data['Px'] = x
         reply_data['Py'] = y
         reply_data['end'] = end
@@ -56,10 +59,16 @@ def log_config():
                         format=LOG_FORMAT,
                         datefmt=DATE_FORMAT)
 
-def start_game(consumer):
+def start_game(consumer,player,whoisfirst):
     log_config()
+    logging.info("{},{}".format(player,whoisfirst))
+
     my_board = Board()
+    
     player1 = WebPlayer(consumer)
     player2 = ExpertPlayer()
-    my_board.start(player1, player2)
+    if whoisfirst == 'Me':
+        my_board.start(player1, player2)
+    else:
+        my_board.start(player2, player1)
 
