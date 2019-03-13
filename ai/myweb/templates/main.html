@@ -40,11 +40,11 @@
    height: 50px; 
   } 
 
-  #myList { 
+  #mylist { 
    margin-top: 10px; 
    display: inline-block; 
    width: 200px; 
-   height:  50px; 
+   height: 50px; 
    font: 16px "微软雅黑"; 
    color: #000; 
    background-color: #ffffff; 
@@ -53,11 +53,11 @@
   #btn { 
    margin-top: 0px; 
    display: block; 
-   width: 100px; 
-   height: 50px; 
+   width: 160px; 
+   height: 60px; 
    font: 16px "微软雅黑"; 
    color: #000; 
-   background-color: #dd3333; 
+   background-color: #ffffff; 
   }
 
   #content{
@@ -67,7 +67,7 @@
    background-color: #ffffff; 
   }
 
-  #whoisfist
+  #isfist
   {
    margin: 100px 100px 100px 100px; 
    display: block; 
@@ -112,19 +112,20 @@
      <span id="txt"></span> 
       <form>
       请选择对手：
-      <select id="myList" onchange="player()">
-      <option>专家</option>
-      <option>中级</option>
-      <option>初级</option>
+      <select id="mylist">
+      <option value="专家" selected="selected"> 专家</option>
+      <option value="中级"> 中级</option>
+      <option value="初级"> 初级</option>
       </select>
       </form>
 
       <span id="txt"></span> 
       请选择先手：
       <form>
-      <input type="radio" name="whoisfist" onclick="check(this.value)" value="Machine">Machine<br />
-      <input type="radio" name="whoisfist" onclick="check(this.value)" value="Me">Me <br />
+      <input type="radio" name= "isfirst" id= "whoisfirst" onclick="check(this.value)" value="Machine" checked="checked"> Machine<br />
+      <input type="radio" name= "isfirst" id= "whoisfirst" onclick="check(this.value)" value="Me"> Me<br />
       </form>
+
      <span id="txt"></span> 
      <input type="button" id="btn" value="开始"/> 
     </div> 
@@ -147,13 +148,12 @@ for (var i = 0; i < 15; i++) {
     } 
 } 
 
-var playinfo =''
 var txt = document.getElementById("txt"); 
 var btn = document.getElementById("btn"); 
 var cas = document.getElementById("cas");// 获取画布对象 
 var ctx = cas.getContext("2d"); //画布上下文 
-var mylist=document.getElementById("myList") 
-var whoisfirst_txt=''
+var mylist=document.getElementById("mylist") 
+var whoisfirst = document.getElementById("whoisfirst").value
   
 // 创建图片对象 
 var img_b = new Image(); 
@@ -167,23 +167,21 @@ var reply_msg
 drawLine(); 
 
 
-function player()
+function check(isfirst)
 {
-  playinfo +='\n'
-  playinfo += '对手:'+ mylist.options[mylist.selectedIndex].text
-}
-
-function check(whoisfist)
-{
-  playinfo += '先手:'+ whoisfist +'\n';
-  whoisfirst_txt = whoisfist
-}
-
+  whoisfirst = isfirst;
+};
 
 //建立websocket的连接，并
 function open_ws_chess() {
     
     ws_chess= new WebSocket('ws://' + window.location.host +'/playchess/');
+    
+
+    var playinfo = '\n'+'对手等级:'+ mylist.options[mylist.selectedIndex].text+'  ';
+
+    playinfo = playinfo + '先手:'+ whoisfirst+'\n';
+
     
     ws_chess.onmessage = function chessmessage(data) { //接受消息处理
         var msg = JSON.parse(data.data);
@@ -214,12 +212,13 @@ function open_ws_chess() {
         content.scrollTop = content.scrollHeight;
         var send_obj = { msgtype:'playinfo', 
                          player:mylist.options[mylist.selectedIndex].text,
-                         whoisfirst:whoisfirst_txt};
+                         whoisfirst:whoisfirst};
         ws_chess.send(JSON.stringify(send_obj));
 
     };
 
     ws_chess.onerror = function(){
+
       content.innerHTML += 'chess: 连接错误。\n'+playinfo;
       content.scrollTop = content.scrollHeight;
     };
@@ -281,7 +280,7 @@ cas.onclick = function (e) {
         return 0; 
     } 
 
-    if (whoisfirst_txt == 'Me'){
+    if (whoisfirst == 'Me'){
       color = 1
     }
     else{
