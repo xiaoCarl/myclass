@@ -54,7 +54,8 @@ Java中语句的结束强制以";"为结尾，Python中我们当然也可以用�
 
 ## 数组Array
 参考C语言，数组大小是静态定义好的不能伸缩；数组中的元素类型要一致
-* Java定义参考：
+
+Java定义参考：
 
     String[] myarr={"a","b","c"};  //定义了长度为3，有初始值的数组
 
@@ -62,12 +63,12 @@ Java中语句的结束强制以";"为结尾，Python中我们当然也可以用�
  
     String[] myarr=new String[5];  //定义了长度为5的数组
 
-* Python定义参考：
+Python定义参考：
 
 Python有两种方式提供数组的定义，引入数组定义主要是保证元素类型一致，numpy功能远远强标准库：
 
-1、标准库array模块, 使用起来与List十分接近，但是存储的变量类型只能是一种，这个类型也便于python调用C语言的时候，进行相关数据结构的转换
-2、使用numpy模块定义同种元素的多维数组，NumPy的数组类被称作ndarray，更多重要ndarray对象属性有：ndarray.ndim(数组轴的个数,秩);ndarray.shape(数组的维度);ndarray.dtype(数组中元素类型的对象,可以指定dtype使用标准Python类型,也可以NumPy提供它自己的数据类型)
+* 标准库array模块, 使用起来与List十分接近，但是存储的变量类型只能是一种，这个类型也便于python调用C语言的时候，进行相关数据结构的转换
+* 使用numpy模块定义同种元素的多维数组，NumPy的数组类被称作ndarray，更多重要ndarray对象属性有：ndarray.ndim(数组轴的个数,秩);ndarray.shape(数组的维度);ndarray.dtype(数组中元素类型的对象,可以指定dtype使用标准Python类型,也可以NumPy提供它自己的数据类型)
 
 备注：numpy可以用以下函数array, zeros, zeros_like, ones, ones_like, empty, empty_like, arange, linspace, rand, randn, fromfunction, fromfile等定义合适的多维数组。
 
@@ -91,11 +92,12 @@ Python有两种方式提供数组的定义，引入数组定义主要是保证�
 ## 列表List
 自动扩展的数组，动态增加元素，在python中List元素类型是可以动态变化的，Python3.5后可以限制元素类型固定；
 
-* Java定义参考：
+Java实现：
 因为List为一个接口，不能初始化，只能通过实例化它的实现类来使用list集合;Java提供了多种List的实现类： 
 * ArrayList() : 代表长度可以改变得数组。可以对元素进行随机的访问，向ArrayList()中插入与删除元素的速度慢。 
 * LinkedList(): 在实现中采用链表数据结构。插入和删除速度快，访问速度慢。
 
+Java定义参考：
 
     List<String> mylist = new ArrayList<String>(); //初始化list集合
     mylist.add("a"); //集合添加数据
@@ -125,11 +127,12 @@ Python定义参考：
 ## 集合Set
 没有重复对象的集合，在集合中没有重复的元素 
 
-* Java定义参考
+* Java实现
 Set接口主要有以下两个实现类：
 Hashset：HashSet类按照哈希算法来存取集合中的对象，存取速度比较快 
 Treeset：TreeSet类实现了SortedSet接口，能够对集合中的对象进行排序。
 
+Java定义参考：
     Set myset=new HashSet();
     String s1=new String("hello"); //引用类型-对象，不能是基础数据类型
     String s2=s1;
@@ -139,7 +142,7 @@ Treeset：TreeSet类实现了SortedSet接口，能够对集合中的对象进行
     myset.add(s3);
     System.out.println(set.size());//打印集合中对象的数目为 2。 
 
-* Python定义参考
+Python定义参考
 
     myset = set(['A', 'B', 'C'])
     myset.add('D')
@@ -147,12 +150,14 @@ Treeset：TreeSet类实现了SortedSet接口，能够对集合中的对象进行
 ## 映射（字典）Map（Dictionary）
 是一种把键对象和值对象映射的集合，它的每一个元素都包含一对键对象和值对象。
 
-* Java定义参考：
+* Java实现：
 Java的Map接口类主要有以下实现类：
 --HashMap
 --HashTable
 --TreeMap
- 
+
+Java定义参考：
+
     Map<String, String> mymap=new HashMap<String, String>();
     mymap.put("key1", "value1");
     mymap.put("key2", "value2");
@@ -165,7 +170,7 @@ Java的Map接口类主要有以下实现类：
         put("key3", "value3");}
     };
 
- Python定义参考:
+Python定义参考:
 
     mydict={}
     mydict["key1"]="value1"
@@ -181,11 +186,13 @@ Java的Map接口类主要有以下实现类：
 
 使用场景：
 * 不变集合Tuple是不可改变的，所以可以做Dict的关键字，Set的元素
-* tuple 作为不可变类型性能上优于list，这只是一方面，更重要的是 tuple 可用于存储异构(heterogeneous)数据，可作为没有字段名的记录（record）来用，比如用tuple来记录一个人的身高、体重、年龄。
+* tuple 作为不可变类型性能上优于list，这只是一方面，更重要的是 tuple 可用于存储异构(heterogeneous)数据，可作为没有字段名的记录（record）来用.
+
+比如用tuple来记录一个人的身高、体重、年龄:
 
     name, age, height, weight= ("zhangsan", 20, 180, 80)
 
-而list一般用于存储同构数据(homogenous)，同构数据就是具有相同意义的数据，比如下面都是字符串类型，代表用户的名字
+而list一般用于存储同构数据(homogenous)，同构数据就是具有相同意义的数据;比如下面都是字符串类型，代表用户的名字
 
     ["zhangsan", "Lisi", "wangwu"]
 
@@ -199,7 +206,7 @@ Java的Map接口类主要有以下实现类：
 
 * tuple类型对于Python自身来说是非常重要的数据类型，比如说函数调用，实际上会将顺序传入的参数先组成一个tuple；多返回值也是靠返回一个tuple来实现的。因为太常用，所以需要一个更有效的数据结构来提高效率，一个不可变的tuple对象从实现上来说可以比list简单不少。再比如说code对象会记录自己的参数名称列表，free variable名称列表等等，这些如果用list，就可能被从外部修改，这样可能导致解释器崩溃；那就只能选择改成一个函数每次都返回一个新的列表，这样又很浪费。所以即使是从解释器自身实现的角度上来说引入这样一个不可变的序列类型也是很重要的。
 
-* Python定义参考:
+Python定义参考:
 
     mytuple = (1,"abcd",[1,2,3])
     print(mytuple[0]) //输出： 1   
@@ -230,7 +237,7 @@ Javatuples定义的元组最大长度为10， 其实我觉得10元组的元素�
  
 这些原型类都是泛型类， 所以尖括号中的字母可以使用任意类型来代替。
 
-* Java定义参考：（下面是一个三元组）
+Java定义参考：（下面是一个三元组）
 
     String str = "abcd";
     Integer integ = 1234;
