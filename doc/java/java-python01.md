@@ -133,6 +133,7 @@ Hashset：HashSet类按照哈希算法来存取集合中的对象，存取速度
 Treeset：TreeSet类实现了SortedSet接口，能够对集合中的对象进行排序。
 
 Java定义参考：
+
     Set myset=new HashSet();
     String s1=new String("hello"); //引用类型-对象，不能是基础数据类型
     String s2=s1;
@@ -151,10 +152,7 @@ Python定义参考
 是一种把键对象和值对象映射的集合，它的每一个元素都包含一对键对象和值对象。
 
 * Java实现：
-Java的Map接口类主要有以下实现类：
---HashMap
---HashTable
---TreeMap
+Java的Map接口类主要有以下实现类：HashMap,HashTable,TreeMap
 
 Java定义参考：
 
