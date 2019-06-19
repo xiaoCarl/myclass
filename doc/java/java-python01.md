@@ -75,7 +75,9 @@ Python有两种方式提供数组的定义，引入数组定义主要是保证�
 
     myarr = array.array('i')
     myarr.append(10)
+
 或者：
+
     >> import numpy as np
     >> myarr1 = np.arange(6) # 1d array
     [0 1 2 3 4 5]
@@ -96,16 +98,21 @@ Python有两种方式提供数组的定义，引入数组定义主要是保证�
 
     List<String> mylist = new ArrayList<String>();      //初始化list集合
     mylist.add("a"); //集合添加数据
+
 或者：
+
     List<String> mylist=new ArrayList<String>(){
         { add("a"); add("b");}
     };
 
 Python定义参考：
+
     mylist = []
     mylist.append("a")
     mylist.append("b")
+
 或者
+
     mylist = ["a","b"]  
 
 备注：从python3.5 如果限定List元素类型，可以使用标注库typing.List定义
@@ -132,6 +139,7 @@ Treeset：TreeSet类实现了SortedSet接口，能够对集合中的对象进行
     System.out.println(set.size());//打印集合中对象的数目为 2。 
 
 * Python定义参考
+
     myset = set(['A', 'B', 'C'])
     myset.add('D')
 
@@ -147,7 +155,9 @@ Java的Map接口类主要有以下实现类：
     Map<String, String> mymap=new HashMap<String, String>();
     mymap.put("key1", "value1");
     mymap.put("key2", "value2");
+
 或者
+
     Map<String, Object> mymap = new HashMap<String, Object>(){ 
         {put("key1", "value1");
         put("key2", "value2");
@@ -155,10 +165,13 @@ Java的Map接口类主要有以下实现类：
     };
 
  Python定义参考:
+
     mydict={}
     mydict["key1"]="value1"
     mydict["key2"]="value2"
+
 或者：
+
     mydict = { 'key1': "value1", 'key2': "value2", 'Bart': 59 }
 
 ## 元组Tuple
@@ -168,11 +181,17 @@ Java的Map接口类主要有以下实现类：
 使用场景：
 * 不变集合Tuple是不可改变的，所以可以做Dict的关键字，Set的元素
 * tuple 作为不可变类型性能上优于list，这只是一方面，更重要的是 tuple 可用于存储异构(heterogeneous)数据，可作为没有字段名的记录（record）来用，比如用tuple来记录一个人的身高、体重、年龄。
+
     name, age, height, weight= ("zhangsan", 20, 180, 80)
+
 而list一般用于存储同构数据(homogenous)，同构数据就是具有相同意义的数据，比如下面都是字符串类型，代表用户的名字
+
     ["zhangsan", "Lisi", "wangwu"]
+
 可能有人要跳出来说 list 可以存储任何类型的数据，但是，你操作数据库的时候你不会把任何东西都往一个list塞吧。正确的方式应该是：
+
     [("zhangsan", 20, 180, 80), ("wangwu", 20, 180, 80)]
+
 正因为tuple作为没有名字的记录来使用在某些场景有一定的局限性，所以又有了一个namedtuple类型的存在，namedtuple可以指定字段名了。
 
 * Tuple不变，性能优于List； 可以多线程访问；
@@ -180,6 +199,7 @@ Java的Map接口类主要有以下实现类：
 * tuple类型对于Python自身来说是非常重要的数据类型，比如说函数调用，实际上会将顺序传入的参数先组成一个tuple；多返回值也是靠返回一个tuple来实现的。因为太常用，所以需要一个更有效的数据结构来提高效率，一个不可变的tuple对象从实现上来说可以比list简单不少。再比如说code对象会记录自己的参数名称列表，free variable名称列表等等，这些如果用list，就可能被从外部修改，这样可能导致解释器崩溃；那就只能选择改成一个函数每次都返回一个新的列表，这样又很浪费。所以即使是从解释器自身实现的角度上来说引入这样一个不可变的序列类型也是很重要的。
 
 * Python定义参考:
+
     mytuple = (1,"abcd",[1,2,3])
     print(mytuple[0]) //输出： 1   
 
@@ -210,6 +230,7 @@ Javatuples定义的元组最大长度为10， 其实我觉得10元组的元素�
 这些原型类都是泛型类， 所以尖括号中的字母可以使用任意类型来代替。
 
 * Java定义参考：（下面是一个三元组）
+
     String str = "abcd";
     Integer integ = 1234;
     Double[] doubleArray = {10,400000,5};
