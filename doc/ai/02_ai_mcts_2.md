@@ -169,5 +169,47 @@
         return "MCTS"
 
 
-### get_move函数流程说明
+## rollout_policy_fn(board)函数
+这是一个随机选择函数，在所有可下的move中随机生成其ation_probs
 
+    def rollout_policy_fn(board):
+    """a coarse, fast version of policy_fn used in the rollout phase."""
+    # rollout randomly
+        action_probs = np.random.rand(len(board.availables))
+        return zip(board.availables, action_probs)
+
+## policy_value_fn(board)函数        
+这是一个平均分配函数，所有可选节点的action_probs都均等, 扩展子节点使用，将该节点的所有子节点都一次性扩展好 
+
+    def policy_value_fn(board):
+        """a function that takes in a state and outputs a list of (action, probability)
+        tuples and a score for the state"""
+        # return uniform probabilities and 0 score for pure MCTS
+        action_probs = np.ones(len(board.availables))/len(board.availables)
+        return zip(board.availables, action_probs), 0   
+
+## MCTSPlayer 对象定义
+
+    class MCTSPlayer(object):
+        """AI player based on MCTS"""
+        def __init__(self, c_puct=5, n_playout=2000):
+            self.mcts = MCTS(policy_value_fn, c_puct, n_playout)
+
+        def set_player_ind(self, p):
+            self.player = p
+
+        def reset_player(self):               #重新生成MCTS Tree树
+            self.mcts.update_with_move(-1)
+
+        def get_action(self, board):
+            sensible_moves = board.availables
+            if len(sensible_moves) > 0:
+                move = self.mcts.get_move(board)
+                self.mcts.update_with_move(-1)  #重新生成MCTS Tree树
+                return move
+            else:
+                print("WARNING: the board is full")
+
+        def __str__(self):
+            return "MCTS {}".format(self.player)
+        
