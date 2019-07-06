@@ -121,13 +121,13 @@
 
 * 在alphazero 中，需要考虑selfplayer 的场景，在该场景下move的选择增加了一些exploration。
 
-    if self._is_selfplay:
-    # add Dirichlet Noise for exploration (needed for
-    # self-play training)
-        move = np.random.choice(
-            acts,
-            p=0.75*probs + 0.25*np.random.dirichlet(0.3*np.ones(len(probs)))
-        )
+        if self._is_selfplay:
+        # add Dirichlet Noise for exploration (needed for
+        # self-play training)
+            move = np.random.choice(
+                acts,
+                p=0.75*probs + 0.25*np.random.dirichlet(0.3*np.ones(len(probs)))
+            )
    
 
 ### mcts_alphazero的MCTSPlayer源代码
