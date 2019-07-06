@@ -116,7 +116,14 @@
         end, winner = state.game_end() ## 检查是否结束，如结束，直接就反向传播
         if not end: # 对于情况2，游戏没有结束，就扩展该叶当前叶子节点
             node.expand(action_probs)
-        leaf_value = self._evaluate_rollout(state) #进行随机下棋，估算该子节点的价值
+            leaf_value = self._evaluate_rollout(state) #进行随机下棋，估算该子节点的价值
+        else：
+            if winner == -1:  # tie
+                leaf_value = 0.0
+            else:
+                leaf_value = (
+                    1.0 if winner == state.get_current_player() else -1.0
+                )
         """反向传播，将模拟对局的收益（一般胜为 1 负为 0）按对应颜色更新该节点及各级祖先节点，同时增加该节点以上所有节点的访问次数；更新的时候按照 -leaf_vaule??
         """
         node.update_recursive(-leaf_value)
