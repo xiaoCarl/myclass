@@ -119,7 +119,7 @@
 
 ## MCSTplayer实现
 
-* 在alphazero 中，需要考虑selfplayer 的场景，在该场景下move的选择增加了一些exploration
+* 在alphazero 中，需要考虑selfplayer 的场景，在该场景下move的选择增加了一些exploration。
 
     if self._is_selfplay:
     # add Dirichlet Noise for exploration (needed for
