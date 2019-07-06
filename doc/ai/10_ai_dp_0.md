@@ -30,7 +30,7 @@ input -> (Affine->ReLu) ->  (Affine->ReLu) ...->(Affine->Softmax)-> output
 input -> (Conv->Relu->Pooling) -> (Conv->Relu) -> (Affine->Relu) ->(Affine->Softmax) -> output
 
 
-![dp_01](./img/dp_01.jpg)
+![cnn_01](./img/cnn_01.jpg)
 
 
 input -> (Conv->Relu->Pooling) -> (Conv->Relu) -> (Affine->Relu) ->(Affine->Softmax) -> output
@@ -46,4 +46,4 @@ input -> (Conv->Relu->Pooling) -> (Conv->Relu) -> (Affine->Relu) ->(Affine->Soft
 * 不同的卷积核，作为不同的特征滤波器
 
 * 空间共享，保留空间信息
-![cnn_02](./img/ann_cnn_02.jpg)
+![cnn_02](./img/cnn_02.jpg)
