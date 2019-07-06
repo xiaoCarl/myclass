@@ -3,12 +3,14 @@
 ## _playout()函数对比
 
 * 在mcts_alphzero中，直接根据训练的策略价值网络，获得对应的走棋概率，以及局面的价值
+
     action_probs, leaf_value = self._policy(state)
 
 * 在mtcs_pure中，扩展叶子节点，并通过随机模拟对局获取该局面的价值
-    action_probs, _ = self._policy(state)
-    node.expand(action_probs)
-    leaf_value = self._evaluate_rollout(state) 
+
+        action_probs, _ = self._policy(state)
+        node.expand(action_probs)
+        leaf_value = self._evaluate_rollout(state) 
 
 ### mcts_alphzero中的实现
     def _playout(self, state):
@@ -118,6 +120,7 @@
 ## MCSTplayer实现
 
 * 在alphazero 中，需要考虑selfplayer 的场景，在该场景下move的选择增加了一些exploration
+
     if self._is_selfplay:
     # add Dirichlet Noise for exploration (needed for
     # self-play training)
