@@ -209,10 +209,16 @@ class Game(object):
             end, winner = self.board.game_end()
             if end:
                 # winner from the perspective of the current player of each state
-                winners_z = np.zeros(len(current_players))
+                winners_z = np.zeros((len(current_players),3))
+
+                # tie=[1,0,0],vaule=0; win=[0,1,0],value =1;fail=[0,0,1],value=-1
+
                 if winner != -1:
-                    winners_z[np.array(current_players) == winner] = 1.0
-                    winners_z[np.array(current_players) != winner] = -1.0
+                    winners_z[np.array(current_players) == winner] =[0,1,0]
+                    winners_z[np.array(current_players) != winner] =[0,0,1]
+                else:
+                    winners_z[current_players >=0 ] = [1,0,0]
+
                 # reset MCTS root node
                 player.reset_player()
                 if is_shown:
@@ -220,4 +226,5 @@ class Game(object):
                         print("Game end. Winner is player:", winner)
                     else:
                         print("Game end. Tie")
+
                 return winner, zip(states, mcts_probs, winners_z)

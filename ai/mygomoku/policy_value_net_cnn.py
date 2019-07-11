@@ -280,7 +280,7 @@ class PolicyValueNet():
         self.board_width = board_width
         self.board_height = board_height
         input_dim = (4, board_width, board_height) 
-        conv_param = {'filter_num':10, 'filter_size':3, 'pad':0, 'stride':1}
+        conv_param = {'filter_num':32, 'filter_size':3, 'pad':0, 'stride':1}
         filter_num = conv_param['filter_num']
         filter_size = conv_param['filter_size']
         filter_pad = conv_param['pad']
@@ -289,20 +289,22 @@ class PolicyValueNet():
         conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
         pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
         
-        hidden_size = 100
+        hidden_size_probs = 256
         output_size_probs = board_width * board_height
-        output_size_value = 1 
+        hidden_size_value = 128
+        output_size_value = 3 
         weight_init_std = 0.01
-
+         
+        #define policy net 
         self.params_p = {}
         self.params_p['W1'] = weight_init_std * \
                             np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
         self.params_p['b1'] = np.zeros(filter_num)
         self.params_p['W2'] = weight_init_std * \
-                            np.random.randn(pool_output_size, hidden_size)
-        self.params_p['b2'] = np.zeros(hidden_size)
+                            np.random.randn(pool_output_size, hidden_size_probs)
+        self.params_p['b2'] = np.zeros(hidden_size_probs)
         self.params_p['W3'] = weight_init_std * \
-                            np.random.randn(hidden_size, output_size_probs)
+                            np.random.randn(hidden_size_probs, output_size_probs)
         self.params_p['b3'] = np.zeros(output_size_probs)
 
         self.layers_p = OrderedDict()
@@ -315,16 +317,16 @@ class PolicyValueNet():
         self.layers_p['Affine2'] = Affine(self.params_p['W3'], self.params_p['b3'])
         self.last_layer_p = SoftmaxWithLoss()
 
-
+        #define value net
         self.params_v = {}
         self.params_v['W1'] = weight_init_std * \
                             np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
         self.params_v['b1'] = np.zeros(filter_num)
         self.params_v['W2'] = weight_init_std * \
-                            np.random.randn(pool_output_size, hidden_size)
-        self.params_v['b2'] = np.zeros(hidden_size)
+                            np.random.randn(pool_output_size, hidden_size_value)
+        self.params_v['b2'] = np.zeros(hidden_size_value)
         self.params_v['W3'] = weight_init_std * \
-                            np.random.randn(hidden_size, output_size_value)
+                            np.random.randn(hidden_size_value, output_size_value)
         self.params_v['b3'] = np.zeros(output_size_value)
          
         self.layers_v = OrderedDict()
@@ -335,7 +337,7 @@ class PolicyValueNet():
         self.layers_v['Affine1'] = Affine(self.params_v['W2'], self.params_v['b2'])
         self.layers_v['Relu2'] = Relu()
         self.layers_v['Affine2'] = Affine(self.params_v['W3'], self.params_v['b3'])
-        self.last_layer_v = MeanSquaredWithLoss()
+        self.last_layer_v = SoftmaxWithLoss()
 
         if model_file is not None:
             self.load_model(model_file)
@@ -350,8 +352,17 @@ class PolicyValueNet():
         probs,value = self.policy_value(x) 
         
         act_probs = zip(legal_positions, probs.flatten()[legal_positions])
+        
+        m_value = value[0]
+        
+        if m_value[0] == max(m_value):
+            act_value = 0
+        elif m_value[1] == max(m_value):
+            act_value = 1.0
+        else:
+            act_value = -1.0        
 
-        return act_probs,value
+        return act_probs,act_value
 
 
     def policy_value(self, x):
@@ -360,7 +371,7 @@ class PolicyValueNet():
 
         probs = x
         for layer_probs in self.layers_p.values():
-            probs =layer_probs.forward(probs)
+            probs = layer_probs.forward(probs)
 
         value = x
         for layer_value in self.layers_v.values():
@@ -416,7 +427,7 @@ class PolicyValueNet():
         
         state_batch = np.reshape(state_batch,(-1,4,self.board_width, self.board_height))
         mcts_probs = np.reshape(mcts_probs, (-1, self.board_width*self.board_height))
-        winner_batch = np.reshape(winner_batch, (-1, 1))
+        winner_batch = np.reshape(winner_batch, (-1, 3))
 
         grads_p,grads_v = self.gradient(state_batch, mcts_probs, winner_batch)
         
@@ -435,9 +446,9 @@ class PolicyValueNet():
         params["params_v"]={}
       
         for key, val in self.params_p.items():
-            params[params_p][key] = val
+            params["params_p"][key] = val
         for key, val in self.params_v.items():
-            params[params_v][key] = val
+            params["params_v"][key] = val
 
         with open(model_name, 'wb') as f:
             pickle.dump(params, f)

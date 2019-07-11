@@ -44,7 +44,7 @@ class Human(object):
 def run():
     n = 4
     width, height = 6, 6
-    model_file = 'best_policy_8_8_5.model'
+    model_file = 'best_policy.model'
     try:
         board = Board(width=width, height=height, n_in_row=n)
         game = Game(board)
