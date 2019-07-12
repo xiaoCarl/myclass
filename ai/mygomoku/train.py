@@ -21,7 +21,7 @@ class TrainPipeline():
                            n_in_row=self.n_in_row)
         self.game = Game(self.board)
         # training params
-        self.learn_rate = 0.1
+        self.learn_rate = 0.01
         self.temp = 1.0  # the temperature param
         self.n_playout = 400  # num of simulations for each move
         self.c_puct = 5
@@ -29,7 +29,7 @@ class TrainPipeline():
         self.batch_size = 512  # mini-batch size for training
         self.data_buffer = deque(maxlen=self.buffer_size)
         self.play_batch_size = 1
-        self.epochs = 5  # num of train_steps for each update
+        self.epochs = 10  # num of train_steps for each update
         self.check_freq = 50
         self.game_batch_num = 1500
         self.best_win_ratio = 0.0

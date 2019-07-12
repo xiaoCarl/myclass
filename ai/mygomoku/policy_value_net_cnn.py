@@ -8,6 +8,7 @@ from __future__ import print_function
 import numpy as np
 import pickle
 from collections import OrderedDict
+import copy
 
 
 def sigmoid(x):
@@ -271,90 +272,124 @@ class Pooling:
 
 
 """
-   conv - relu - pool - affine - relu - affine - softmax
-   conv - relu - pool - affine - relu - affine - softmax
+   conv - relu - conv - relu - affine - relu - affine - softmax
+   conv - relu - conv - relu - affine - relu - affine - softmax
  
 """
+class DeepConvNet():
+    def __init__(self, input_dim=(4, 64, 64),
+                 conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
+                 conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
+                 conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
+                 hidden_size = 256, output_size=64 ):
+
+        pre_node_nums = np.array([1*3*3, 16*3*3, 16*3*3, 32*3*3, hidden_size])
+        weight_init_scales = np.sqrt(2.0 / pre_node_nums)  
+
+        self.params = {}
+        pre_channel_num = input_dim[0]
+        for idx, conv_param in enumerate([conv_param_1, conv_param_2, conv_param_3]):
+            self.params['W' + str(idx+1)] = weight_init_scales[idx] * np.random.randn(conv_param['filter_num'], pre_channel_num, conv_param['filter_size'], conv_param['filter_size'])
+            self.params['b' + str(idx+1)] = np.zeros(conv_param['filter_num'])
+            pre_channel_num = conv_param['filter_num']
+        self.params['W4'] = weight_init_scales[3] * np.random.randn(128*8*8, hidden_size)
+        self.params['b4'] = np.zeros(hidden_size)
+        self.params['W5'] = weight_init_scales[4] * np.random.randn(hidden_size, output_size)
+        self.params['b5'] = np.zeros(output_size)
+
+        self.layers = []
+        self.layers.append(Convolution(self.params['W1'], self.params['b1'], 
+                           conv_param_1['stride'], conv_param_1['pad']))
+        self.layers.append(Relu())
+        self.layers.append(Convolution(self.params['W2'], self.params['b2'], 
+                           conv_param_2['stride'], conv_param_2['pad']))
+        self.layers.append(Relu())
+        self.layers.append(Convolution(self.params['W3'], self.params['b3'], 
+                           conv_param_3['stride'], conv_param_3['pad']))
+        self.layers.append(Relu())
+        self.layers.append(Affine(self.params['W4'], self.params['b4']))
+        self.layers.append(Relu())
+        #self.layers.append(Dropout(0.5))
+        self.layers.append(Affine(self.params['W5'], self.params['b5']))
+        #self.layers.append(Dropout(0.5))
+        
+        self.last_layer = SoftmaxWithLoss()
+
+    def predict(self, x, train_flg=False):
+        for layer in self.layers:
+            x = layer.forward(x)
+        return x
+
+    def loss(self, x, t):
+        y = self.predict(x, train_flg=True)
+        return self.last_layer.forward(y, t)
+
+    def accuracy(self, x, t, batch_size=100):
+        if t.ndim != 1 : t = np.argmax(t, axis=1)
+
+        acc = 0.0
+
+        for i in range(int(x.shape[0] / batch_size)):
+            tx = x[i*batch_size:(i+1)*batch_size]
+            tt = t[i*batch_size:(i+1)*batch_size]
+            y = self.predict(tx, train_flg=False)
+            y = np.argmax(y, axis=1)
+            acc += np.sum(y == tt)
+
+        return acc / x.shape[0]
+
+    def gradient(self, x, t):
+        # forward
+        self.loss(x, t)
+
+        # backward
+        dout = 1
+        dout = self.last_layer.backward(dout)
+
+        tmp_layers = copy.copy(self.layers)        
+        tmp_layers.reverse()
+        for layer in tmp_layers:
+            dout = layer.backward(dout)
+
+        grads = {}
+        for i, layer_idx in enumerate((0, 2, 4, 6, 8)):
+            grads['W' + str(i+1)] = self.layers[layer_idx].dW
+            grads['b' + str(i+1)] = self.layers[layer_idx].db
+
+        return grads
+
+
 class PolicyValueNet():
-    def __init__(self, board_width, board_height, model_file=None):
+    def __init__(self, board_width=8, board_height=8, model_file=None):
+        
         self.board_width = board_width
         self.board_height = board_height
-        input_dim = (4, board_width, board_height) 
-        conv_param = {'filter_num':32, 'filter_size':3, 'pad':0, 'stride':1}
-        filter_num = conv_param['filter_num']
-        filter_size = conv_param['filter_size']
-        filter_pad = conv_param['pad']
-        filter_stride = conv_param['stride']
-        input_size = input_dim[1]
-        conv_output_size = (input_size - filter_size + 2*filter_pad) / filter_stride + 1
-        pool_output_size = int(filter_num * (conv_output_size/2) * (conv_output_size/2))
-        
-        hidden_size_probs = 256
-        output_size_probs = board_width * board_height
-        hidden_size_value = 128
-        output_size_value = 3 
-        weight_init_std = 0.01
-         
-        #define policy net 
-        self.params_p = {}
-        self.params_p['W1'] = weight_init_std * \
-                            np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
-        self.params_p['b1'] = np.zeros(filter_num)
-        self.params_p['W2'] = weight_init_std * \
-                            np.random.randn(pool_output_size, hidden_size_probs)
-        self.params_p['b2'] = np.zeros(hidden_size_probs)
-        self.params_p['W3'] = weight_init_std * \
-                            np.random.randn(hidden_size_probs, output_size_probs)
-        self.params_p['b3'] = np.zeros(output_size_probs)
 
-        self.layers_p = OrderedDict()
-        self.layers_p['Conv1'] = Convolution(self.params_p['W1'], self.params_p['b1'],
-                                           conv_param['stride'], conv_param['pad'])
-        self.layers_p['Relu1'] = Relu()
-        self.layers_p['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
-        self.layers_p['Affine1'] = Affine(self.params_p['W2'], self.params_p['b2'])
-        self.layers_p['Relu2'] = Relu()
-        self.layers_p['Affine2'] = Affine(self.params_p['W3'], self.params_p['b3'])
-        self.last_layer_p = SoftmaxWithLoss()
+        self.network_probs = DeepConvNet( input_dim=(4, board_width, board_height),
+            conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
+            conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
+            conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
+            hidden_size = 256, output_size= board_width*board_height )
 
-        #define value net
-        self.params_v = {}
-        self.params_v['W1'] = weight_init_std * \
-                            np.random.randn(filter_num, input_dim[0], filter_size, filter_size)
-        self.params_v['b1'] = np.zeros(filter_num)
-        self.params_v['W2'] = weight_init_std * \
-                            np.random.randn(pool_output_size, hidden_size_value)
-        self.params_v['b2'] = np.zeros(hidden_size_value)
-        self.params_v['W3'] = weight_init_std * \
-                            np.random.randn(hidden_size_value, output_size_value)
-        self.params_v['b3'] = np.zeros(output_size_value)
-         
-        self.layers_v = OrderedDict()
-        self.layers_v['Conv1'] = Convolution(self.params_v['W1'], self.params_v['b1'],
-                                           conv_param['stride'], conv_param['pad'])
-        self.layers_v['Relu1'] = Relu()
-        self.layers_v['Pool1'] = Pooling(pool_h=2, pool_w=2, stride=2)
-        self.layers_v['Affine1'] = Affine(self.params_v['W2'], self.params_v['b2'])
-        self.layers_v['Relu2'] = Relu()
-        self.layers_v['Affine2'] = Affine(self.params_v['W3'], self.params_v['b3'])
-        self.last_layer_v = SoftmaxWithLoss()
+        self.network_value = DeepConvNet( input_dim=(4, board_width, board_height),
+            conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
+            conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
+            conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
+            hidden_size = 256, output_size = 3 )
 
         if model_file is not None:
             self.load_model(model_file)
 
-
     def policy_value_fn(self, board):
         legal_positions = board.availables
         current_state = board.current_state()
-
         x = current_state.reshape(-1, 4, self.board_width, self.board_height)
-
-        probs,value = self.policy_value(x) 
         
+        probs = self.network_probs.predict(x)
         act_probs = zip(legal_positions, probs.flatten()[legal_positions])
-        
+
+        value =  self.network_value.predict(x)
         m_value = value[0]
-        
         if m_value[0] == max(m_value):
             act_value = 0
         elif m_value[1] == max(m_value):
@@ -362,93 +397,40 @@ class PolicyValueNet():
         else:
             act_value = -1.0        
 
-        return act_probs,act_value
-
+        return act_probs, act_value
 
     def policy_value(self, x):
-        
         x = np.reshape(x,(-1,4,self.board_width, self.board_height))
+        probs = self.network_probs.predict(x)
+        value = self.network_value.predict(x)
+        return probs, value
 
-        probs = x
-        for layer_probs in self.layers_p.values():
-            probs = layer_probs.forward(probs)
-
-        value = x
-        for layer_value in self.layers_v.values():
-            value =layer_value.forward(value)
-
-        return probs, value 
-
-    def loss(self, x, probs,value):
-        p_probs,p_value  = self.policy_value(x)
-        loss_probs = self.last_layer_p.forward(p_probs, probs)
-        loss_value = self.last_layer_v.forward(p_value, value)
-        return loss_probs, loss_value
-
-    def gradient(self, x, probs, value):
-        
-        # forward
-        self.loss(x, probs,value)
-        #print("probs：{},value:{}".format(probs,value))  
-        # probs network backward  
-        dout = 1
-        dout = self.last_layer_p.backward(dout)
-
-        layers = list(self.layers_p.values())
-        layers.reverse()
-        for layer in layers:
-            dout = layer.backward(dout)
-
-        grads_p = {}
-        grads_p['W1'], grads_p['b1'] = self.layers_p['Conv1'].dW, self.layers_p['Conv1'].db
-        grads_p['W2'], grads_p['b2'] = self.layers_p['Affine1'].dW, self.layers_p['Affine1'].db
-        grads_p['W3'], grads_p['b3'] = self.layers_p['Affine2'].dW, self.layers_p['Affine2'].db
-
-        # value network backward  
-        dout = 1
-        dout = self.last_layer_v.backward(dout)
-        #print("dout:{}".format(dout))
-
-        layers = list(self.layers_v.values())
-        layers.reverse()
-        for layer in layers:
-            dout = layer.backward(dout)
-
-        grads_v = {}
-        grads_v['W1'], grads_v['b1'] = self.layers_v['Conv1'].dW, self.layers_v['Conv1'].db
-        grads_v['W2'], grads_v['b2'] = self.layers_v['Affine1'].dW, self.layers_v['Affine1'].db
-        grads_v['W3'], grads_v['b3'] = self.layers_v['Affine2'].dW, self.layers_v['Affine2'].db
-
-        return grads_p, grads_v
-
-
-   
-    def train_step(self, state_batch, mcts_probs, winner_batch, lr):
-        
+    def train_step(self, state_batch, probs_batch, winner_batch, lr):
         state_batch = np.reshape(state_batch,(-1,4,self.board_width, self.board_height))
-        mcts_probs = np.reshape(mcts_probs, (-1, self.board_width*self.board_height))
+        probs_batch = np.reshape(probs_batch, (-1, self.board_width*self.board_height))
         winner_batch = np.reshape(winner_batch, (-1, 3))
 
-        grads_p,grads_v = self.gradient(state_batch, mcts_probs, winner_batch)
-        
-        for key in self.params_p.keys():
-            self.params_p[key] -= lr*grads_p[key] 
+        grads_p = self.network_probs.gradient(state_batch,probs_batch)
+        loss_p  = self.network_probs.loss(state_batch,probs_batch)
+        for key in self.network_probs.params.keys():
+            self.network_probs.params[key] -= lr*grads_p[key] 
 
-        for key in self.params_v.keys():
-            self.params_v[key] -= lr*grads_v[key] 
+        grads_v = self.network_value.gradient(state_batch,winner_batch)
+        loss_v  = self.network_value.loss(state_batch,winner_batch)
+        for key in self.network_value.params.keys():
+            self.network_value.params[key] -= lr*grads_v[key] 
 
-        loss_probs,loss_value = self.loss(state_batch, mcts_probs, winner_batch)
-        return loss_probs, loss_value
+        return loss_p, loss_v
     
     def save_model(self, model_name="params.pkl"):
         params = {}
-        params["params_p"]={}
-        params["params_v"]={}
-      
-        for key, val in self.params_p.items():
-            params["params_p"][key] = val
-        for key, val in self.params_v.items():
-            params["params_v"][key] = val
+        params['network_probs'] = {} 
+        params['network_value'] = {} 
+
+        for key, val in self.network_probs.params.items():
+            params['network_probs'][key] = val
+        for key, val in self.network_value.params.items():
+            params['network_value'][key] = val
 
         with open(model_name, 'wb') as f:
             pickle.dump(params, f)
@@ -456,14 +438,20 @@ class PolicyValueNet():
     def load_model(self, model_name="params.pkl"):
         with open(model_name, 'rb') as f:
             params = pickle.load(f)
+        
+        for key, val in params['network_probs'].items():
+            self.network_probs.params[key] = val
 
-        for key, val in params["params_p"].items():
-            self.params_p[key] = val
-        for key, val in params["params_v"].items():
-            self.params_v[key] = val
+        for key, val in params['network_value'].items():
+            self.network_value.params[key] = val
 
-        for i, key in enumerate(['Conv1', 'Affine1', 'Affine2']):
-            self.layers_p[key].W = self.params_p['W' + str(i+1)]
-            self.layers_p[key].b = self.params_p['b' + str(i+1)]
-            self.layers_v[key].W = self.params_v['W' + str(i+1)]
-            self.layers_v[key].b = self.params_v['b' + str(i+1)]
+        for i, layer_idx in enumerate((0, 2, 4, 6, 8)):
+            self.network_value.layers[layer_idx].W = self.network_value.params['W' + str(i+1)]
+            self.network_value.layers[layer_idx].b = self.network_value.params['b' + str(i+1)]
+            self.network_probs.layers[layer_idx].W = self.network_probs.params['W' + str(i+1)]
+            self.network_probs.layers[layer_idx].b = self.network_probs.params['b' + str(i+1)]
+
+if __name__ == '__main__':
+    net = PolicyValueNet(8,8)
+    net.save_model()
+    net.load_model()

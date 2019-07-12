@@ -1,24 +1,43 @@
-#使用numpy自定义了两个神经网络类：
+# 使用numpy自定义了两个神经网络类：
 
 ## 卷积网络cnn对象
 
 * 文件：policy_value_net_cnn.py
+
 * 网络模型：
+
 ** 策略网络：
-    input - conv - relu - pool - affine1 - relu - affine2 - softmax - output
+
+    input - conv1-relu - conv2-relu - conv3-relu - 
+          - affine1-relu - affine2 - softmax - output
+
     input: (4,board_width, board_height)
-    conv: {'filter_num':10, 'filter_size':3, 'pad':0, 'stride':1}
-    affine1: (256)
-    affine2: (board_width*board_height)
+    conv1: {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1}
+    conv2: {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1}
+    conv3: {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1}
+
+    affine1: (256) #隐藏层，也是全连接层
+
+    affine2: (board_width*board_height) #输出层
 
 ** 价值网络：
-    input - conv - relu - pool - affine1 - relu - affine2 - softmax - output
+
+    input - conv1-relu - conv2-relu - conv3-relu - 
+          - affine1-relu - affine2 - softmax - output
+
     input: (4,board_width, board_height)
-    conv:  {'filter_num':10, 'filter_size':3, 'pad':0, 'stride':1}
-    affine1: (128)
-    affine2: (3)  //（和，赢，输）
+    conv1: {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1}
+    conv2: {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1}
+    conv3: {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1}
+
+    affine1: (256)
+
+    affine2: (3)  
+
 ## 输入数据
-* state: 三维数组, 4 * board_width * board_height
+* state: 
+三维数组, 4 * board_width * board_height
+
     array([[
         [0., 0., 0., 0., 1., 0., 0., 0.],
         [0., 0., 0., 0., 0., 0., 0., 0.],
@@ -57,7 +76,9 @@
         [1., 1., 1., 1., 1., 1., 1., 1.]]])
 
 
-* probs: 一维数组，board_width*board_height
+* probs:
+一维数组，board_width*board_height
+
     array([2.45700246e-13, 5.89680590e-02, 4.17690418e-02, 2.45700246e-13,
        1.71990172e-02, 4.91400491e-03, 2.45700246e-13, 2.45700246e-13,
        2.45700246e-13, 2.45700246e-13, 2.45700246e-13, 0.00000000e+00,
@@ -75,10 +96,15 @@
        2.45700246e-13, 3.93120393e-02, 2.45700246e-13, 2.45700246e-13,
        7.86240786e-02, 3.93120393e-02, 2.94840295e-02, 2.45700246e-13])
 
-value:一维数组 (tie,win,fail)
-    array([0., 0., 1.])
+value:
+一维数组 (tie,win,fail)
+
+    array([1., 0., 0.])    #表示和局 0
+    array([0., 1., 0.])    #表示胜局 1 
+    array([0., 0., 1.])    #表示败局 -1 
 
 ## 全连接神经网络ann对象
+
 policy_value_net_ann.py
 
 ## 训练网络
@@ -88,6 +114,4 @@ policy_value_net_ann.py
 ## 使用训练的网络对弈
     
     python  human_player.py
-
-
 
