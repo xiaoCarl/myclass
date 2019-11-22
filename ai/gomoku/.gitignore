@@ -1,4 +1,4 @@
 __pycache__
-.stestr/
+.pytest_cache/
 *.pyc
 .DS_Store
