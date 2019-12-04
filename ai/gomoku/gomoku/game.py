@@ -216,8 +216,10 @@ class Game(object):
                 if winner != -1:
                     winners_z[np.array(current_players) == winner] =[0,1,0]
                     winners_z[np.array(current_players) != winner] =[0,0,1]
-                else:
-                    winners_z[current_players >=0 ] = [1,0,0]
+                else: # tie
+                    #winners_z[current_players >=0 ] = [1,0,0]
+                    winners_z[np.array(current_players) == winner] =[1,0,0]
+                    winners_z[np.array(current_players) != winner] =[1,0,0]
 
                 # reset MCTS root node
                 player.reset_player()

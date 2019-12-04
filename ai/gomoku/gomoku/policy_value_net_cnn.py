@@ -388,14 +388,14 @@ class PolicyValueNet():
         probs = self.network_probs.predict(x)
         act_probs = zip(legal_positions, probs.flatten()[legal_positions])
 
-        value =  self.network_value.predict(x)
+        value = softmax(self.network_value.predict(x))
         m_value = value[0]
         if m_value[0] == max(m_value):
-            act_value = 0
+            act_value = m_value[0]
         elif m_value[1] == max(m_value):
-            act_value = 1.0
+            act_value = m_value[1]
         else:
-            act_value = -1.0        
+            act_value = -m_value[2]        
 
         return act_probs, act_value
 

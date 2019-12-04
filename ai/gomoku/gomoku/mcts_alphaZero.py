@@ -8,6 +8,7 @@ network to guide the tree search and evaluate the leaf nodes
 
 import numpy as np
 import copy
+from operator import itemgetter
 
 
 def softmax(x):
@@ -85,6 +86,13 @@ class TreeNode(object):
         return self._parent is None
 
 
+def rollout_policy_fn(board):
+    """a coarse, fast version of policy_fn used in the rollout phase."""
+    # rollout randomly
+    action_probs = np.random.rand(len(board.availables))
+    return zip(board.availables, action_probs)
+
+
 class MCTS(object):
     """An implementation of Monte Carlo Tree Search."""
 
@@ -102,6 +110,28 @@ class MCTS(object):
         self._policy = policy_value_fn
         self._c_puct = c_puct
         self._n_playout = n_playout
+
+
+    def _simulation(self,state):
+        # Evaluate the leaf node by random rollout
+        player = state.get_current_player()
+        end, winner = state.game_end()
+   
+        while len(state.availables)>0 and end == False:
+            action_probs = rollout_policy_fn(state)
+            max_action = max(action_probs, key=itemgetter(1))[0]
+            state.do_move(max_action)
+            end, winner = state.game_end()
+            if end:
+                break
+
+        if winner == -1:  # tie
+            leaf_value = 0
+        else:
+            leaf_value = 1 if winner == player else -1
+
+        return leaf_value
+
 
     def _playout(self, state):
         """Run a single playout from the root to the leaf, getting a value at
@@ -132,7 +162,7 @@ class MCTS(object):
                 leaf_value = (
                     1.0 if winner == state.get_current_player() else -1.0
                 )
-
+        print(leaf_value)   
         # Update value and visit count of nodes in this traversal.
         node.update_recursive(-leaf_value)
 
@@ -182,7 +212,7 @@ class MCTSPlayer(object):
     def reset_player(self):
         self.mcts.update_with_move(-1)
 
-    def get_action(self, board, temp=1e-3, return_prob=0):
+    def get_action(self, board, temp=0.5, return_prob=0):
         sensible_moves = board.availables
         # the pi vector returned by MCTS as in the alphaGo Zero paper
         move_probs = np.zeros(board.width*board.height)
