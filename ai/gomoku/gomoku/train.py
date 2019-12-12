@@ -6,9 +6,9 @@ import numpy as np
 from collections import defaultdict, deque
 from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
-from mcts_alphaZero import MCTSPlayer
-from policy_value_net_cnn import PolicyValueNet 
-
+from mcts_alphaZero import AlphaZeroPlayer
+#from policy_value_net_numpy import PolicyValueNet 
+from policy_value_net_pytorch import PolicyValueNet 
 
 class Train():
     def __init__(self, init_model=None):
@@ -31,7 +31,7 @@ class Train():
         self.play_batch_size = 1
         self.epochs = 10  # num of train_steps for each update
         self.check_freq = 50
-        self.game_batch_num = 1500
+        self.game_batch_num = 500
         self.best_win_ratio = 0.0
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
@@ -45,7 +45,7 @@ class Train():
             # start training from a new policy-value net
             self.policy_value_net = PolicyValueNet(self.board_width,
                                                    self.board_height)
-        self.mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
+        self.mcts_player = AlphaZeroPlayer(self.policy_value_net.policy_value_fn,
                                       c_puct=self.c_puct,
                                       n_playout=self.n_playout,
                                       is_selfplay=1)
@@ -82,9 +82,7 @@ class Train():
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
         while True:
-            move, move_probs = player.get_action(self.board,
-                                                 temp=temp,
-                                                 return_prob=1)
+            move, move_probs = player.get_action(self.board,return_prob=1)
             # store the data
             states.append(self.board.current_state())
             mcts_probs.append(move_probs)
@@ -95,17 +93,11 @@ class Train():
             end, winner = self.board.game_end()
             if end:
                 # winner from the perspective of the current player of each state
-                winners_z = np.zeros((len(current_players),3))
-
-                # tie=[1,0,0],vaule=0; win=[0,1,0],value =1;fail=[0,0,1],value=-1
+                winners_z = np.zeros(len(current_players))
 
                 if winner != -1:
-                    winners_z[np.array(current_players) == winner] =[0,1,0]
-                    winners_z[np.array(current_players) != winner] =[0,0,1]
-                else: # tie
-                    #winners_z[current_players >=0 ] = [1,0,0]
-                    winners_z[np.array(current_players) == winner] =[1,0,0]
-                    winners_z[np.array(current_players) != winner] =[1,0,0]
+                    winners_z[np.array(current_players) == winner] = 1
+                    winners_z[np.array(current_players) != winner] =-1
 
                 # reset MCTS root node
                 player.reset_player()
@@ -116,8 +108,7 @@ class Train():
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
         for i in range(n_games):
-            winner, play_data = self.start_self_play(self.mcts_player,
-                                                          temp=self.temp)
+            winner, play_data = self.start_self_play(self.mcts_player)
             play_data = list(play_data)[:]
             self.episode_len = len(play_data)
             play_data = self.get_equi_data(play_data)

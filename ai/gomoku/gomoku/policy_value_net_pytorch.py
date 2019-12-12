@@ -80,13 +80,12 @@ class PolicyValueNet():
  
         self.board_width = board_width
         self.board_height = board_height
-        self.lr = 0.01  # coef of l2 penalty
         # the policy value net module
         self.policy_value_net = MyModule(board_width, board_height).to(self.device)
 
         self.loss_value = nn.MSELoss()           #回归问题
        # self.loss_policy = nn.MSELoss()          #CrossEntropyLoss() #分类问题
-        self.optimizer = optim.Adam(self.policy_value_net.parameters(),lr=self.lr)
+        self.optimizer = optim.Adam(self.policy_value_net.parameters(),lr=0.01)
 
         if model_file:
             net_params = torch.load(model_file)
@@ -128,7 +127,7 @@ class PolicyValueNet():
         value = value.data[0][0]
         return act_probs, value
 
-    def train_step(self, state_batch, mcts_probs, winner_batch):
+    def train_step(self, state_batch, mcts_probs, winner_batch,lr):
         """perform a training step"""
         # wrap in Variable
         state_batch = torch.FloatTensor(state_batch)
@@ -137,8 +136,9 @@ class PolicyValueNet():
 
         # zero the parameter gradients
         self.optimizer.zero_grad()
+        
         # set learning rate
-        #set_learning_rate(self.optimizer, lr)
+        set_learning_rate(self.optimizer, lr)
 
         # forward
         log_act_probs, value = self.policy_value_net(state_batch)
@@ -156,7 +156,7 @@ class PolicyValueNet():
         self.optimizer.step()
         #return loss.data[0], entropy.data[0]
         #for pytorch version >= 0.5 please use the following line instead.
-        return value_loss.item(),policy_loss.item()
+        return policy_loss.item(),value_loss.item()
 
     def get_policy_param(self):
         net_params = self.policy_value_net.state_dict()
