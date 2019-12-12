@@ -10,7 +10,7 @@ from mcts_alphaZero import MCTSPlayer
 from policy_value_net_cnn import PolicyValueNet 
 
 
-class TrainPipeline():
+class Train():
     def __init__(self, init_model=None):
         # params of the board and the game
         self.board_width = 8
@@ -19,7 +19,7 @@ class TrainPipeline():
         self.board = Board(width=self.board_width,
                            height=self.board_height,
                            n_in_row=self.n_in_row)
-        self.game = Game(self.board)
+        self.game=Game(self.board)
         # training params
         self.learn_rate = 0.01
         self.temp = 1.0  # the temperature param
@@ -50,6 +50,8 @@ class TrainPipeline():
                                       n_playout=self.n_playout,
                                       is_selfplay=1)
     
+
+    #准备数据阶段        
     def get_equi_data(self, play_data):
         """augment the data set by rotation and flipping
         play_data: [(state, mcts_prob, winner_z), ..., ...]
@@ -72,16 +74,57 @@ class TrainPipeline():
                                     winner))
         return extend_data
 
+    def start_self_play(self, player, is_shown=0, temp=1e-3):
+        """ start a self-play game using a MCTS player, reuse the search tree,
+        and store the self-play data: (state, mcts_probs, z) for training
+        """
+        self.board.init_board()
+        p1, p2 = self.board.players
+        states, mcts_probs, current_players = [], [], []
+        while True:
+            move, move_probs = player.get_action(self.board,
+                                                 temp=temp,
+                                                 return_prob=1)
+            # store the data
+            states.append(self.board.current_state())
+            mcts_probs.append(move_probs)
+            current_players.append(self.board.current_player)
+            # perform a move
+            self.board.do_move(move)
+            
+            end, winner = self.board.game_end()
+            if end:
+                # winner from the perspective of the current player of each state
+                winners_z = np.zeros((len(current_players),3))
+
+                # tie=[1,0,0],vaule=0; win=[0,1,0],value =1;fail=[0,0,1],value=-1
+
+                if winner != -1:
+                    winners_z[np.array(current_players) == winner] =[0,1,0]
+                    winners_z[np.array(current_players) != winner] =[0,0,1]
+                else: # tie
+                    #winners_z[current_players >=0 ] = [1,0,0]
+                    winners_z[np.array(current_players) == winner] =[1,0,0]
+                    winners_z[np.array(current_players) != winner] =[1,0,0]
+
+                # reset MCTS root node
+                player.reset_player()
+
+                return winner, zip(states, mcts_probs, winners_z)
+
 
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
         for i in range(n_games):
-            winner, play_data = self.game.start_self_play(self.mcts_player,
+            winner, play_data = self.start_self_play(self.mcts_player,
                                                           temp=self.temp)
             play_data = list(play_data)[:]
             self.episode_len = len(play_data)
             play_data = self.get_equi_data(play_data)
             self.data_buffer.extend(play_data)
+
+    
+    #进行训练
 
     def policy_update(self):
         """update the policy-value net"""
@@ -99,6 +142,8 @@ class TrainPipeline():
             print("loss_probs:{},loss_value:{}".format(loss_p,loss_v))
         return loss_p,loss_v
 
+  
+    #进行评估
     def policy_evaluate(self, n_games=10):
         """
         Evaluate the trained policy by playing against the pure MCTS player
@@ -122,8 +167,8 @@ class TrainPipeline():
                 win_cnt[1], win_cnt[2], win_cnt[-1]))
         return win_ratio
 
-    def save_model(self):
-        win_ratio = self.policy_evaluate()
+   #保存模型数据
+    def save_model(self,win_ratio):
         self.policy_value_net.save_model('./current_policy.model')
         if win_ratio > self.best_win_ratio:
             print("New best policy!!!!!!!!")
@@ -135,6 +180,8 @@ class TrainPipeline():
                 self.pure_mcts_playout_num += 100
                 self.best_win_ratio = 0.0
 
+
+    # 整个训练流水线
     def run(self):
         """run the training pipeline"""
         try:
@@ -148,11 +195,12 @@ class TrainPipeline():
                 # and save the model params
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
-                    self.save_model()
+                    win_ratio = self.policy_evaluate()
+                    self.save_model(win_ratio)
         except KeyboardInterrupt:
             print('\n\rquit')
 
 
 if __name__ == '__main__':
-    training_pipeline = TrainPipeline()
+    training_pipeline = Train()
     training_pipeline.run()
