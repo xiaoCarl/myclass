@@ -77,5 +77,26 @@
 
 下一步就应该走2/4节点；所以说之前的图是错误的，因为制图的人并没有注意到要把胜率倒过来（有朋友会说是不是可以认为它的白圈代表白棋的胜率，但这样它的回溯过程就是错的）
 
+## 下面是一个MCTS的伪代码示意：
 
+```
+    mcts_tree = init_mcts_tree(current_board)   #根据当前局面，生成一个MTCS树
+    #在规定的搜索时间或者次数内，通过不停的模拟对局，更新mcts_tree数据      
+    for time in limit_time:                
+
+         simulate_board = copy(board)  #复制一份当前的局面，作为模拟对面的局面
+         
+         node = mcts_tree.root_node    #每次都从根节点开始
+     
+         leaf_node  =  mcts_tree.selection(node)  #选择一个叶子节点，利用 UCB 公式计算每个子节点的 UCB 值，选择最大值的子节点
+
+         mcts_tree.expansion(leaf_node)      #在该叶子节点，拓展获取新的叶子节点, 如拓展多个，就随机选择新的一个     
+         leaf_value = mcts.simulation(simulate_board)  #进行模拟，并获得结果
+
+         # 将模拟对局的收益（一般胜为 1 负为 0）按对应颜色更新该节点及各级祖先节点，同时增加该节点以上所有节点的访问次数
+         mcts.backpropagation(leaf_node, leaf_value)  
+   
+     #根据模拟结果，从当前局面的子节点中挑选平均收益最高的给出最佳走法
+     move = the_node_of_max_value(mcts_tree.root_node.children_node.value)   
+```
 
