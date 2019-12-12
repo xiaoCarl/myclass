@@ -17,6 +17,9 @@ def sigmoid(x):
 def relu(x):
     return np.maximum(0, x)
 
+def tanh(x):
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+
 def softmax(x):
     if x.ndim == 2:
         x = x.T
@@ -115,7 +118,7 @@ class Tanh:
         self.out = None
 
     def forward(self, x):
-        out = (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) 
+        out = tanh(x)      #(np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) 
         self.out = out
         return out
 
@@ -159,7 +162,8 @@ class TanhMeanSquaredWithLoss:
 
     def forward(self, x, t):
         self.t = t
-        self.y = Tanh().forward(x)
+        self.tanh = Tanh()
+        self.y = self.tanh.forward(x)
         self.loss = mean_squared_error(self.y, self.t)
         
         return self.loss
@@ -173,7 +177,7 @@ class TanhMeanSquaredWithLoss:
             dx[np.arange(batch_size), self.t] -= 1
             dx = dx / batch_size
     
-        dx = Tanh().backward(dx)
+        dx = self.tanh.backward(dx)
 
         return dx
 
@@ -430,30 +434,24 @@ class PolicyValueNet():
         current_state = board.current_state()
         x = current_state.reshape(-1, 4, self.board_width, self.board_height)
         
-        probs = self.network_probs.predict(x)
+        probs = softmax(self.network_probs.predict(x))
+        
         act_probs = zip(legal_positions, probs.flatten()[legal_positions])
 
-        value = softmax(self.network_value.predict(x))
-        m_value = value[0]
-        if m_value[0] == max(m_value):
-            act_value = m_value[0]
-        elif m_value[1] == max(m_value):
-            act_value = m_value[1]
-        else:
-            act_value = -m_value[2]        
-
-        return act_probs, act_value
+        act_value = tanh(self.network_value.predict(x))
+        
+        return act_probs,act_value
 
     def policy_value(self, x):
         x = np.reshape(x,(-1,4,self.board_width, self.board_height))
         probs = self.network_probs.predict(x)
         value = self.network_value.predict(x)
-        return probs, value
+        return sotfmax(probs), tanh(value)
 
     def train_step(self, state_batch, probs_batch, winner_batch, lr):
         state_batch = np.reshape(state_batch,(-1,4,self.board_width, self.board_height))
         probs_batch = np.reshape(probs_batch, (-1, self.board_width*self.board_height))
-        winner_batch = np.reshape(winner_batch, (-1, 3))
+        winner_batch = np.reshape(winner_batch, (-1))
 
         grads_p = self.network_probs.gradient(state_batch,probs_batch)
         loss_p  = self.network_probs.loss(state_batch,probs_batch)
