@@ -200,13 +200,13 @@ class Expert(object):
             
         if len(self.board.availables) > 3:
             move_list = heapq.nlargest(3,self.move_value,key=lambda i : self.move_value[i][4])
-            print move_list
+            print(move_list)
        
             move = random.choice(move_list) 
         else:
             move = random.choice(self.board.availables)            
           
-        print move
+        print(move)
         return move, self.move_value[move][4], probs
  
     def get_move(self,board):
