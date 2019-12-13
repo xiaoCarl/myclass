@@ -17,6 +17,9 @@ def sigmoid(x):
 def relu(x):
     return np.maximum(0, x)
 
+def tanh(x):
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
+
 def softmax(x):
     if x.ndim == 2:
         x = x.T
@@ -95,6 +98,7 @@ class Relu:
 
         return dx
 
+
 class Sigmoid:
     def __init__(self):
         self.out = None
@@ -106,6 +110,20 @@ class Sigmoid:
 
     def backward(self, dout):
         dx = dout * (1.0 - self.out) * self.out
+
+        return dx
+
+class Tanh:
+    def __init__(self):
+        self.out = None
+
+    def forward(self, x):
+        out = tanh(x)      #(np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) 
+        self.out = out
+        return out
+
+    def backward(self, dout):
+        dx = dout * (1.0 - self.out * self.out)
 
         return dx
 
@@ -134,6 +152,33 @@ class Affine:
         self.db = np.sum(dout, axis=0)
         
         dx = dx.reshape(*self.original_x_shape)  
+        return dx
+
+class TanhMeanSquaredWithLoss:
+    def __init__(self):
+        self.loss = None
+        self.y = None 
+        self.t = None 
+
+    def forward(self, x, t):
+        self.t = t
+        self.tanh = Tanh()
+        self.y = self.tanh.forward(x)
+        self.loss = mean_squared_error(self.y, self.t)
+        
+        return self.loss
+
+    def backward(self, dout=1):
+        batch_size = self.t.shape[0]
+        if self.t.size == self.y.size:
+            dx = (self.y - self.t) / batch_size
+        else:
+            dx = self.y.copy()
+            dx[np.arange(batch_size), self.t] -= 1
+            dx = dx / batch_size
+    
+        dx = self.tanh.backward(dx)
+
         return dx
 
 class MeanSquaredWithLoss:
@@ -273,7 +318,7 @@ class Pooling:
 
 """
    conv - relu - conv - relu - affine - relu - affine - softmax
-   conv - relu - conv - relu - affine - relu - affine - softmax
+   conv - relu - conv - relu - affine - relu - affine - tanh
  
 """
 class DeepConvNet():
@@ -281,7 +326,7 @@ class DeepConvNet():
                  conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
-                 hidden_size = 256, output_size=64 ):
+                 hidden_size = 256, output_size=64, last_layer = SoftmaxWithLoss() ):
 
         pre_node_nums = np.array([1*3*3, 16*3*3, 16*3*3, 32*3*3, hidden_size])
         weight_init_scales = np.sqrt(2.0 / pre_node_nums)  
@@ -313,7 +358,8 @@ class DeepConvNet():
         self.layers.append(Affine(self.params['W5'], self.params['b5']))
         #self.layers.append(Dropout(0.5))
         
-        self.last_layer = SoftmaxWithLoss()
+        self.last_layer = last_layer       # default is  SoftmaxWithLoss()
+
 
     def predict(self, x, train_flg=False):
         for layer in self.layers:
@@ -359,6 +405,7 @@ class DeepConvNet():
         return grads
 
 
+
 class PolicyValueNet():
     def __init__(self, board_width=8, board_height=8, model_file=None):
         
@@ -369,13 +416,15 @@ class PolicyValueNet():
             conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
             conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
             conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
-            hidden_size = 256, output_size= board_width*board_height )
+            hidden_size = 256, output_size= board_width*board_height, 
+            last_layer = SoftmaxWithLoss() )
 
         self.network_value = DeepConvNet( input_dim=(4, board_width, board_height),
             conv_param_1 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
             conv_param_2 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
             conv_param_3 = {'filter_num':128, 'filter_size':3, 'pad':1, 'stride':1},
-            hidden_size = 256, output_size = 3 )
+            hidden_size = 256, output_size = 1,
+            last_layer= TanhMeanSquaredWithLoss())
 
         if model_file is not None:
             self.load_model(model_file)
@@ -385,30 +434,24 @@ class PolicyValueNet():
         current_state = board.current_state()
         x = current_state.reshape(-1, 4, self.board_width, self.board_height)
         
-        probs = self.network_probs.predict(x)
+        probs = softmax(self.network_probs.predict(x))
+        
         act_probs = zip(legal_positions, probs.flatten()[legal_positions])
 
-        value = softmax(self.network_value.predict(x))
-        m_value = value[0]
-        if m_value[0] == max(m_value):
-            act_value = m_value[0]
-        elif m_value[1] == max(m_value):
-            act_value = m_value[1]
-        else:
-            act_value = -m_value[2]        
-
-        return act_probs, act_value
+        act_value = tanh(self.network_value.predict(x))
+        
+        return act_probs,act_value
 
     def policy_value(self, x):
         x = np.reshape(x,(-1,4,self.board_width, self.board_height))
         probs = self.network_probs.predict(x)
         value = self.network_value.predict(x)
-        return probs, value
+        return sotfmax(probs), tanh(value)
 
     def train_step(self, state_batch, probs_batch, winner_batch, lr):
         state_batch = np.reshape(state_batch,(-1,4,self.board_width, self.board_height))
         probs_batch = np.reshape(probs_batch, (-1, self.board_width*self.board_height))
-        winner_batch = np.reshape(winner_batch, (-1, 3))
+        winner_batch = np.reshape(winner_batch, (-1))
 
         grads_p = self.network_probs.gradient(state_batch,probs_batch)
         loss_p  = self.network_probs.loss(state_batch,probs_batch)
