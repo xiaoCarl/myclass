@@ -108,8 +108,8 @@ class PolicyValueNet():
         output: a batch of action probabilities and state values
         """
         state_batch = torch.FloatTensor(state_batch)
-        log_act_probs, value = self.policy_value_net(state_batch)
-        act_probs = np.exp(log_act_probs.data.numpy())
+        act_probs, value = self.policy_value_net(state_batch)
+        act_probs = act_probs.data.numpy()
         return act_probs, value.data.numpy()
 
     def policy_value_fn(self, board):
@@ -121,8 +121,8 @@ class PolicyValueNet():
         legal_positions = board.availables
         current_state = np.ascontiguousarray(board.current_state().reshape(
                 -1, 4, self.board_width, self.board_height))
-        log_act_probs, value = self.policy_value_net(torch.from_numpy(current_state).float())
-        act_probs = np.exp(log_act_probs.data.numpy().flatten())
+        act_probs, value = self.policy_value_net(torch.from_numpy(current_state).float())
+        act_probs = act_probs.data.numpy().flatten()
         act_probs = zip(legal_positions, act_probs[legal_positions])
         value = value.data[0][0]
         return act_probs, value
@@ -141,22 +141,27 @@ class PolicyValueNet():
         set_learning_rate(self.optimizer, lr)
 
         # forward
-        log_act_probs, value = self.policy_value_net(state_batch)
+        act_probs, value = self.policy_value_net(state_batch)
         # define the loss = (z - v)^2 - pi^T * log(p) + c||theta||^2
         # Note: the L2 penalty is incorporated in optimizer
         
         value_loss = self.loss_value(value.view(-1), winner_batch)
 
-        policy_loss = self.loss_policy(log_act_probs,mcts_probs)
-        print("p_probs:",log_act_probs)
-        print("t_probs:",mcts_probs)
+        policy_loss = self.loss_policy(act_probs,mcts_probs)
+        #print("p_probs:",log_act_probs)
+        #print("t_probs:",mcts_probs)
         loss = value_loss + policy_loss
         # backward and optimize
         loss.backward()
         self.optimizer.step()
+       
+        # calc policy entropy, for monitoring only
+        entropy = -torch.mean(
+                torch.sum(act_probs *torch.log(act_probs), 1)
+                )
         #return loss.data[0], entropy.data[0]
         #for pytorch version >= 0.5 please use the following line instead.
-        return policy_loss.item(),value_loss.item()
+        return loss.item(),entropy.item()
 
     def get_policy_param(self):
         net_params = self.policy_value_net.state_dict()

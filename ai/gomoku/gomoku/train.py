@@ -21,7 +21,7 @@ class Train():
                            n_in_row=self.n_in_row)
         self.game=Game(self.board)
         # training params
-        self.learn_rate = 0.01
+        self.learn_rate = 2e-3
         self.temp = 1.0  # the temperature param
         self.n_playout = 400  # num of simulations for each move
         self.c_puct = 5
@@ -33,6 +33,9 @@ class Train():
         self.check_freq = 50
         self.game_batch_num = 500
         self.best_win_ratio = 0.0
+        self.lr_multiplier = 1
+        self.kl_targ = 0.02
+
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 100
