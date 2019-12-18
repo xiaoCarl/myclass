@@ -93,13 +93,19 @@ class MCTS(object):
     def _playout(self,board):
         # Selection
         board, node = self._selection(board)
-        # Expansion 
-        # 
-        leaf_value = self._expansion(board,node)
+        end, winner = board.game_end()
+        if not end:
+           # Expansion 
+            leaf_value = self._expansion(board,node)
+        else:
+            if winner == -1 :
+                leaf_value = 0
+            else:
+                leaf_value = 1 if winner == board.get_current_player() else -1
         # Simulation
         #leaf_value = self._simulation(board)
         # Backpropagation
-        self._backpropagation(node,leaf_value)
+        self._backpropagation(node,-leaf_value)
     
     def get_move_probs(self, board, temper=0.01):
         """self player use
@@ -148,8 +154,6 @@ class AlphaZeroPlayer(object):
 
     def get_temperature(self,board):
         if self._is_selfplay:
-            temper = 1e-3 
-        else: # 选择温度参数
             if len(board.availables) > 60:
                 temper = 1.0
             elif len(board.availables)> 56:
@@ -159,7 +163,9 @@ class AlphaZeroPlayer(object):
             elif len(board.availables)> 42:
                 temper = 1e-2
             else:
-                temper = 1e-3 
+                temper = 1e-3
+        else:
+            temper = 1e-3
         return temper   
 
     def get_action(self, board, return_prob=0):

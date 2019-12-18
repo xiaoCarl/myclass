@@ -5,6 +5,7 @@ import random
 import numpy as np
 from collections import defaultdict, deque
 from game import Board, Game
+from self_play import start_self_play
 from mcts_pure import MCTSPlayer as MCTS_Pure
 from mcts_alphaZero import AlphaZeroPlayer
 #from policy_value_net_numpy import PolicyValueNet 
@@ -77,41 +78,10 @@ class Train():
                                     winner))
         return extend_data
 
-    def start_self_play(self, player, is_shown=0, temp=1e-3):
-        """ start a self-play game using a MCTS player, reuse the search tree,
-        and store the self-play data: (state, mcts_probs, z) for training
-        """
-        self.board.init_board()
-        p1, p2 = self.board.players
-        states, mcts_probs, current_players = [], [], []
-        while True:
-            move, move_probs = player.get_action(self.board,return_prob=1)
-            # store the data
-            states.append(self.board.current_state())
-            mcts_probs.append(move_probs)
-            current_players.append(self.board.current_player)
-            # perform a move
-            self.board.do_move(move)
-            
-            end, winner = self.board.game_end()
-            if end:
-                # winner from the perspective of the current player of each state
-                winners_z = np.zeros(len(current_players))
-
-                if winner != -1:
-                    winners_z[np.array(current_players) == winner] = 1
-                    winners_z[np.array(current_players) != winner] =-1
-
-                # reset MCTS root node
-                player.reset_player()
-
-                return winner, zip(states, mcts_probs, winners_z)
-
-
     def collect_selfplay_data(self, n_games=1):
         """collect self-play data for training"""
         for i in range(n_games):
-            winner, play_data = self.start_self_play(self.mcts_player)
+            winner, play_data = start_self_play(self.board,self.mcts_player)
             play_data = list(play_data)[:]
             self.episode_len = len(play_data)
             play_data = self.get_equi_data(play_data)
@@ -172,7 +142,7 @@ class Train():
         Evaluate the trained policy by playing against the pure MCTS player
         Note: this is only for monitoring the progress of training
         """
-        current_mcts_player = MCTSPlayer(self.policy_value_net.policy_value_fn,
+        current_mcts_player = AlphaZeroPlayer(self.policy_value_net.policy_value_fn,
                                          c_puct=self.c_puct,
                                          n_playout=self.n_playout)
         pure_mcts_player = MCTS_Pure(c_puct=5,
