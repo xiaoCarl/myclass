@@ -21,3 +21,14 @@ TCAP  总市值
 MCAP  流通市值
 
 
+
+# 下载数据
+pip3 install baostack
+
+python3 getdata.py
+
+
+# 简单的量化测试(https://github.com/Ckend/pythondict-quant.git)
+python3 cash.py
+
+
