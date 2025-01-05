@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "4426fec0-35af-4c92-b881-b0a1cec05ee5"
+      }
+    },
+    "android": {
+      "package": "com.oldcai.myappai"
+    },
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    }
+  }
+}
